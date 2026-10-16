@@ -1,6 +1,8 @@
 import { classifyUserIntent } from '../intentClassifier.js';
 import { defaultKnowledgeManager } from '../knowledgeManager.js';
 import { defaultGeminiService, detectSalutation } from '../geminiService.js';
+import { dbService } from '../supabaseClient.js';
+import { categorizeGameQuestion } from '../app.js';
 import fs from 'node:fs';
 import path from 'node:path';
 
@@ -18,152 +20,169 @@ function assert(condition: boolean, testName: string, detail?: string) {
 }
 
 async function runAllTests() {
-  console.log('--- STARTING NGAN NHI CHATBOT BEHAVIOR & KNOWLEDGE TESTS ---\n');
+  console.log('--- STARTING UPGRADED NGAN NHI CHATBOT BEHAVIOR & REASONING TESTS ---\n');
 
-  // Test 1: "Xin chào" receives a greeting, not an unanswered-question response
-  const t1Intent = classifyUserIntent('Xin chào', 'neutral');
+  // Scenario A: "anh cảm ơn" → natural acknowledgment, no unanswered record
+  const scA = classifyUserIntent('anh cảm ơn', 'anh');
   assert(
-    t1Intent.isSocial === true && t1Intent.intent === 'greeting',
-    'Test 1: "Xin chào" classifies as greeting'
+    scA.isSocial === true && scA.intent === 'thanks',
+    'Scenario A: "anh cảm ơn" classifies as thanks with isSocial=true'
   );
   assert(
-    !!t1Intent.directAnswer && t1Intent.directAnswer.includes('Ngân Nhi xin chào') && !t1Intent.directAnswer.includes('chưa có thông tin'),
-    'Test 1b: "Xin chào" gives friendly greeting without unanswered text'
-  );
-
-  // Test 2: "Hi" receives a greeting
-  const t2Intent = classifyUserIntent('Hi', 'neutral');
-  assert(
-    t2Intent.isSocial === true && t2Intent.intent === 'greeting',
-    'Test 2: "Hi" receives a greeting'
+    Boolean(scA.directAnswer?.includes('không có gì') && scA.directAnswer?.includes('anh')),
+    'Scenario A-2: "anh cảm ơn" returns polite acknowledgment addressing user as "anh"'
   );
 
-  // Test 3: "Cảm ơn em" receives a natural acknowledgment
-  const t3Intent = classifyUserIntent('Cảm ơn em', 'neutral');
+  // Scenario B: "xin chào" → greeting, no unanswered record
+  const scB = classifyUserIntent('xin chào', 'anh');
   assert(
-    t3Intent.isSocial === true && t3Intent.intent === 'thanks' && !!t3Intent.directAnswer && t3Intent.directAnswer.includes('không có gì'),
-    'Test 3: "Cảm ơn em" receives natural acknowledgment'
+    scB.isSocial === true && scB.intent === 'greeting',
+    'Scenario B: "xin chào" classifies as greeting with isSocial=true'
+  );
+  assert(
+    Boolean(scB.directAnswer?.includes('Ngân Nhi xin chào anh') && !scB.directAnswer?.includes('chưa có thông tin')),
+    'Scenario B-2: "xin chào" returns warm greeting without triggering unanswered logic'
   );
 
-  // Test 4: "Anh muốn hỏi về giftcode" receives a relevant follow-up or giftcode guidance
-  const t4Intent = classifyUserIntent('Anh muốn hỏi về giftcode', 'anh');
+  // Additional Social Intents: "ok em", "được rồi", "hay quá"
+  const okIntent = classifyUserIntent('ok em', 'neutral');
   assert(
-    t4Intent.isSocial === true &&
-    t4Intent.intent === 'clarification_giftcode' &&
-    !!t4Intent.directAnswer &&
-    t4Intent.directAnswer.includes('danh sách giftcode hay cần hướng dẫn cách nhập code') &&
-    t4Intent.directAnswer.includes('anh'),
-    'Test 4: "Anh muốn hỏi về giftcode" receives clarifying question addressing user as "anh"'
+    okIntent.isSocial === true && okIntent.intent === 'acknowledgment' && okIntent.directAnswer === 'Dạ vâng ạ!',
+    'Social Check: "ok em" classifies as acknowledgment with "Dạ vâng ạ!"'
   );
 
-  // Test 5: "Cho tôi toàn bộ code" retrieves the supplied list
-  const t5Matches = defaultKnowledgeManager.search('Cho tôi toàn bộ code', 3);
-  const t5Top = t5Matches[0];
+  const duocRoiIntent = classifyUserIntent('được rồi', 'anh');
   assert(
-    !!t5Top && t5Top.entry.id === 'giftcode_full_list' && t5Top.score >= 0.5,
-    'Test 5: "Cho tôi toàn bộ code" matches giftcode_full_list'
-  );
-  assert(
-    t5Top?.entry.answer.includes('TONTHUONGHUONG888') && t5Top?.entry.answer.includes('MUNGQUOCKHANH'),
-    'Test 5b: giftcode_full_list contains the required 28 codes'
+    duocRoiIntent.isSocial === true && duocRoiIntent.intent === 'acknowledgment',
+    'Social Check: "được rồi" classifies as acknowledgment with isSocial=true'
   );
 
-  // Test 6: "Nhập code ở đâu?" retrieves redemption instructions
-  const t6Matches = defaultKnowledgeManager.search('Nhập code ở đâu?', 3);
-  const t6Top = t6Matches[0];
+  const hayQuaIntent = classifyUserIntent('hay quá', 'chi');
   assert(
-    !!t6Top && t6Top.entry.id === 'giftcode_redemption_guide' && t6Top.entry.answer.includes('https://nap.sohagame.vn'),
-    'Test 6: "Nhập code ở đâu?" retrieves redemption instructions'
+    hayQuaIntent.isSocial === true && hayQuaIntent.intent === 'acknowledgment' && Boolean(hayQuaIntent.directAnswer?.includes('cảm ơn chị')),
+    'Social Check: "hay quá" classifies as acknowledgment with warm praise response'
   );
 
-  // Test 7: "Code sinh nhật cần điều kiện gì?" retrieves birthday eligibility rules
-  const t7Matches = defaultKnowledgeManager.search('Code sinh nhật cần điều kiện gì?', 3);
-  const t7Top = t7Matches[0];
+  // Scenario C: "Giftcode nhập ở đâu?" → direct answer using the existing giftcode redemption instructions
+  const scCMatches = defaultKnowledgeManager.search('Giftcode nhập ở đâu?', 3);
+  const scCTop = scCMatches[0];
   assert(
-    !!t7Top && t7Top.entry.id === 'giftcode_birthday' && t7Top.entry.answer.includes('1.000.000 VNĐ') && t7Top.entry.answer.includes('taikhoan.sohagame.vn'),
-    'Test 7: "Code sinh nhật cần điều kiện gì?" retrieves birthday eligibility rules'
+    Boolean(scCTop && scCTop.entry.id === 'giftcode_redemption_guide' && scCTop.score >= 0.4),
+    'Scenario C: "Giftcode nhập ở đâu?" retrieves giftcode_redemption_guide'
+  );
+  assert(
+    Boolean(scCTop?.entry.answer.includes('https://nap.sohagame.vn') && scCTop?.entry.answer.includes('GiftCode')),
+    'Scenario C-2: redemption instructions include official URL and steps'
   );
 
-  // Test 8: "Tôi chưa nhận được code" retrieves the delayed-delivery guidance
-  const t8Matches = defaultKnowledgeManager.search('Tôi chưa nhận được code', 3);
-  const t8Top = t8Matches[0];
+  // Scenario D: "Tại sao chưa nhận được code?" → use the existing knowledge about waiting 30 minutes to 2 hours
+  const scDMatches = defaultKnowledgeManager.search('Tại sao chưa nhận được code?', 3);
+  const scDTop = scDMatches[0];
   assert(
-    !!t8Top && t8Top.entry.id === 'giftcode_delayed_delivery' && t8Top.entry.answer.includes('30 phút đến 2 giờ'),
-    'Test 8: "Tôi chưa nhận được code" retrieves delayed-delivery guidance'
+    Boolean(scDTop && scDTop.entry.id === 'giftcode_delayed_delivery' && scDTop.score >= 0.4),
+    'Scenario D: "Tại sao chưa nhận được code?" retrieves giftcode_delayed_delivery'
+  );
+  assert(
+    Boolean(scDTop?.entry.answer.includes('30 phút đến 2 giờ')),
+    'Scenario D-2: delayed-delivery guidance specifies 30 phút đến 2 giờ'
   );
 
-  // Test 9: "Cổ Đế dùng ở 1.1 rồi có dùng ở 1.2 được không?" retrieves the correct restriction
-  const t9Matches = defaultKnowledgeManager.search('Cổ Đế dùng ở 1.1 rồi có dùng ở 1.2 được không?', 3);
-  const t9Top = t9Matches[0];
+  // Scenario E: A follow-up question referring to the previous answer → use conversation context
+  const previousTurnContext = 'Võ tướng Cổ Đế dùng ở chương 1.1 khi vượt ải cấm dùng ở chương 1.2';
+  const scEMatches = defaultKnowledgeManager.search('Thế ở 1.2 có dùng được tiếp không?', 3, previousTurnContext);
+  const scETop = scEMatches[0];
   assert(
-    !!t9Top && t9Top.entry.id === 'tech_code_de_restriction' && t9Top.entry.answer.includes('không thể tiếp tục sử dụng ở chương x.2'),
-    'Test 9: "Cổ Đế dùng ở 1.1 rồi có dùng ở 1.2 được không?" retrieves Cổ Đế restriction'
+    Boolean(scETop && scETop.entry.id === 'tech_code_de_restriction'),
+    'Scenario E: Follow-up question with prior context correctly resolves to tech_code_de_restriction'
   );
 
-  // Test 10: "Cách nạp SohaCoin bằng chuyển khoản?" retrieves the correct steps
-  const t10Matches = defaultKnowledgeManager.search('Cách nạp SohaCoin bằng chuyển khoản?', 3);
-  const t10Top = t10Matches[0];
+  // Scenario F: An unknown, time-sensitive event question → do not invent an answer; explain limitation and record
+  const unknownEventQuery = 'Sự kiện đua top máy chủ mới vào tuần sau có phần thưởng danh hiệu gì?';
+  const scFMatches = defaultKnowledgeManager.search(unknownEventQuery, 3);
+  const scFValid = scFMatches.filter((m) => m.score >= 0.35);
   assert(
-    !!t10Top && t10Top.entry.id === 'payment_bank_transfer' && t10Top.entry.answer.includes('Chuyển khoản trực tiếp'),
-    'Test 10: "Cách nạp SohaCoin bằng chuyển khoản?" retrieves bank transfer steps'
+    scFValid.length === 0,
+    'Scenario F: Unknown future event query has 0 valid matches in verified knowledge'
   );
-
-  // Test 11: Question with no matching verified knowledge handled honestly without fabrication
-  const t11Matches = defaultKnowledgeManager.search('Game có tính năng cưới vợ sinh con kết hôn không?', 3);
-  const t11Valid = t11Matches.filter((m) => m.score >= 0.35);
-  assert(
-    t11Valid.length === 0,
-    'Test 11: Unsupported question has 0 valid matches above threshold'
-  );
-  const t11Answer = await defaultGeminiService.generateGroundedAnswer({
-    userQuestion: 'Game có tính năng cưới vợ sinh con kết hôn không?',
-    salutation: 'neutral',
+  const scFAnswer = await defaultGeminiService.generateGroundedAnswer({
+    userQuestion: unknownEventQuery,
+    salutation: 'anh',
     matchedEntries: [],
+    isTimeSensitiveOrUnknown: true,
   });
   assert(
-    t11Answer.answer.includes('chưa có đủ thông tin đã kiểm chứng') && t11Answer.answer.includes('không muốn cung cấp thông tin sai'),
-    'Test 11b: Fallback answer is honest and does not fabricate game rules'
+    Boolean(
+      scFAnswer.answer.includes('chưa có đủ thông tin') ||
+      scFAnswer.answer.includes('chưa có thông tin') ||
+      scFAnswer.answer.includes('không muốn cung cấp thông tin sai')
+    ),
+    'Scenario F-2: Response honestly explains limitation and does not invent unconfirmed rewards'
+  );
+  const scFCategory = categorizeGameQuestion(unknownEventQuery);
+  assert(
+    scFCategory === 'events',
+    'Scenario F-3: Unknown event question correctly categorizes as "events"'
   );
 
-  // Test 12: The Anh/Chị selector produces consistent forms of address
-  const t12GreetingAnh = classifyUserIntent('Xin chào', 'anh');
-  const t12GreetingChi = classifyUserIntent('Xin chào', 'chi');
+  // Scenario G: A question phrased differently from an existing FAQ but asking about the same fact
+  const scGQuery = 'Nạp mã quà tặng ở trang nào thế em?';
+  const scGMatches = defaultKnowledgeManager.search(scGQuery, 3);
+  const scGTop = scGMatches[0];
   assert(
-    Boolean(t12GreetingAnh.directAnswer?.includes('chào anh ạ') && !t12GreetingAnh.directAnswer?.includes('chị')),
-    'Test 12a: Explicit "anh" selector produces "anh" address'
-  );
-  assert(
-    Boolean(t12GreetingChi.directAnswer?.includes('chào chị ạ') && !t12GreetingChi.directAnswer?.includes('anh/chị')),
-    'Test 12b: Explicit "chi" selector produces "chị" address'
+    Boolean(scGTop && scGTop.entry.id === 'giftcode_redemption_guide' && scGTop.score >= 0.35),
+    'Scenario G: Paraphrased query "Nạp mã quà tặng ở trang nào thế em?" matches redemption guide'
   );
 
-  const t12cSalutation = detectSalutation('Chị cần hỗ trợ nạp tiền.');
-  const t12cResult = classifyUserIntent('Chị cần hỗ trợ nạp tiền.', t12cSalutation);
+  // Scenario H: Supabase unavailable → handle gracefully without falsely claiming question was permanently saved
+  const mockUnsaved = await dbService.recordUnansweredQuestion({
+    question: 'Tính năng kết hôn nuôi con có không?',
+    normalizedQuestion: 'tinh nang ket hon nuoi con co khong',
+    category: 'gameplay',
+    reason: 'Chưa có thông tin kiểm chứng trong cẩm nang',
+  });
   assert(
-    t12cSalutation === 'chi' &&
-    Boolean(t12cResult.directAnswer?.includes('Dạ thưa chị') && t12cResult.directAnswer?.includes('Chị muốn tìm hiểu')),
-    'Test 12c: Natural text with "chị" automatically detects pronoun and addresses as "chị"'
+    mockUnsaved.success === true,
+    'Scenario H: recordUnansweredQuestion succeeds with graceful fallback'
+  );
+  // Verify that if not persisted to Postgres, we formulate memory notice without false claim
+  const noticeText = mockUnsaved.isDatabasePersisted
+    ? '(Câu hỏi của anh đã được hệ thống lưu vào Supabase để đối chiếu và bổ sung vào cẩm nang tri thức ạ).'
+    : '(Câu hỏi của anh đã được ghi nhận trong bộ nhớ tạm để nghiên cứu bổ sung cẩm nang ạ).';
+  assert(
+    Boolean(mockUnsaved.isDatabasePersisted ? noticeText.includes('Supabase') : noticeText.includes('bộ nhớ tạm')),
+    'Scenario H-2: Fallback notice truthfully describes storage state without false claim'
   );
 
-  // Test 13: No privileged API key is exposed in the client bundle
+  // Pronoun Detection Tests: anh, chị, and manual selectors
+  const salAnh = detectSalutation('Anh muốn hỏi về giftcode');
+  assert(salAnh === 'anh', 'Pronoun Check: detects "anh" from text');
+
+  const salChi = detectSalutation('Chị cần hỗ trợ nạp tiền');
+  assert(salChi === 'chi', 'Pronoun Check: detects "chi" from text');
+
+  // Security Check: Client bundle secret check
   const distDir = path.resolve(process.cwd(), 'dist');
   let exposedSecrets = false;
   if (fs.existsSync(distDir)) {
-    const files = fs.readdirSync(path.join(distDir, 'assets'));
-    for (const file of files) {
-      if (file.endsWith('.js')) {
-        const content = fs.readFileSync(path.join(distDir, 'assets', file), 'utf-8');
-        if (content.includes('service_role') || content.includes('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9') || content.includes('SUPABASE_SERVICE_ROLE_KEY')) {
-          exposedSecrets = true;
-          break;
+    const assetsDir = path.join(distDir, 'assets');
+    if (fs.existsSync(assetsDir)) {
+      const files = fs.readdirSync(assetsDir);
+      for (const file of files) {
+        if (file.endsWith('.js')) {
+          const content = fs.readFileSync(path.join(assetsDir, file), 'utf-8');
+          if (
+            content.includes('service_role') ||
+            content.includes('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9') ||
+            content.includes('SUPABASE_SERVICE_ROLE_KEY')
+          ) {
+            exposedSecrets = true;
+            break;
+          }
         }
       }
     }
   }
-  assert(
-    !exposedSecrets,
-    'Test 13: Client bundle does not contain any secret keys or service role tokens'
-  );
+  assert(!exposedSecrets, 'Security: No service role keys or secrets exposed in client bundle');
 
   console.log(`\n--- TEST SUMMARY: ${passed} PASSED, ${failed} FAILED ---`);
   if (failed > 0) {

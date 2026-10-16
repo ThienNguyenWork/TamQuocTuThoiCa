@@ -27,23 +27,25 @@ export interface SupabaseStatus {
   projectRef?: string;
 }
 
-// In-memory fallback structures for when Supabase is not configured or awaiting table migration
+export interface UnansweredQuestionRecord {
+  id: string;
+  question: string;
+  normalizedQuestion: string;
+  occurrenceCount: number;
+  category: string;
+  createdAt: string;
+  lastSeenAt: string;
+  status: 'pending' | 'reviewed' | 'resolved';
+  reason?: string;
+  suggestedAnswer?: string;
+}
+
+// In-memory fallback structures
 interface InMemorySession {
   id: string;
   sessionTokenHash: string;
   createdAt: string;
   lastActivityAt: string;
-}
-
-interface InMemoryUnanswered {
-  id: string;
-  question: string;
-  normalizedQuestion: string;
-  occurrenceCount: number;
-  createdAt: string;
-  lastSeenAt: string;
-  status: 'pending' | 'reviewed' | 'resolved';
-  reason?: string;
 }
 
 interface InMemoryFeedback {
@@ -66,7 +68,7 @@ class DatabaseService {
   // In-memory fallback caches
   private memorySessions: Map<string, InMemorySession> = new Map();
   private memoryMessages: Map<string, ChatMessageRecord[]> = new Map();
-  private memoryUnanswered: Map<string, InMemoryUnanswered> = new Map();
+  private memoryUnanswered: Map<string, UnansweredQuestionRecord> = new Map();
   private memoryFeedback: InMemoryFeedback[] = [];
 
   constructor() {
@@ -79,7 +81,6 @@ class DatabaseService {
 
     if (supabaseUrl && supabaseKey && !supabaseUrl.includes('your-project-ref')) {
       try {
-        // Extract project ref from URL if possible (e.g. https://xyz.supabase.co)
         const match = supabaseUrl.match(/https:\/\/([a-z0-9_-]+)\.supabase\.co/i);
         if (match) {
           this.projectRef = match[1];
@@ -92,7 +93,6 @@ class DatabaseService {
           },
         });
         this.isConfigured = true;
-        // Verify connectivity asynchronously
         this.testConnection(true);
       } catch (err) {
         this.isConfigured = false;
@@ -113,7 +113,6 @@ class DatabaseService {
       return false;
     }
 
-    // Cooldown check: avoid hammering Supabase on rapid sequential calls
     const now = Date.now();
     if (!forceRecheck && now - this.lastCheckTime < 15000) {
       return this.isConnected;
@@ -127,7 +126,6 @@ class DatabaseService {
     this.lastCheckTime = now;
 
     try {
-      // Test read from chat_sessions limit 1
       const { error } = await this.client.from('chat_sessions').select('id').limit(1);
 
       if (error) {
@@ -204,7 +202,6 @@ class DatabaseService {
   public async getOrCreateSession(sessionTokenHash: string): Promise<{ id: string; isNew: boolean }> {
     const now = new Date().toISOString();
 
-    // Only attempt Supabase query if both configured AND tables are verified to exist
     if (this.isConfigured && this.client && this.isConnected) {
       try {
         const { data: existing, error: selectError } = await this.client
@@ -238,7 +235,7 @@ class DatabaseService {
           return { id: inserted.id, isNew: true };
         }
       } catch {
-        // Fall back gracefully to in-memory cache
+        // Fall back gracefully
       }
     }
 
@@ -295,7 +292,7 @@ class DatabaseService {
           return { id: data.id, createdAt: data.created_at };
         }
       } catch {
-        // Fall back gracefully to in-memory
+        // Fall back gracefully
       }
     }
 
@@ -318,19 +315,25 @@ class DatabaseService {
     return { id, createdAt };
   }
 
-  public async recordUnansweredQuestion(
-    question: string,
-    normalizedQuestion: string,
-    reason?: string
-  ): Promise<{ success: boolean; isDatabasePersisted: boolean }> {
+  public async recordUnansweredQuestion(params: {
+    question: string;
+    normalizedQuestion: string;
+    category?: string;
+    reason?: string;
+    suggestedAnswer?: string;
+  }): Promise<{ success: boolean; isDatabasePersisted: boolean }> {
+    const { question, normalizedQuestion, category = 'general', reason, suggestedAnswer } = params;
     const now = new Date().toISOString();
+    const reasonPayload = `[Category: ${category}] ${reason || 'Not in verified knowledge base'}${
+      suggestedAnswer ? ` | Suggestion: ${suggestedAnswer.slice(0, 300)}` : ''
+    }`;
 
     if (this.isConfigured && this.client && this.isConnected) {
       try {
         const { error: rpcError } = await this.client.rpc('record_unanswered_question', {
           p_question: question,
           p_normalized: normalizedQuestion,
-          p_reason: reason || 'Not sufficiently matched with verified knowledge base',
+          p_reason: reasonPayload,
         });
 
         if (!rpcError) {
@@ -351,7 +354,7 @@ class DatabaseService {
                 occurrence_count: (existing.occurrence_count || 1) + 1,
                 last_seen_at: now,
                 question,
-                reason: reason || 'Not matched with verified knowledge base',
+                reason: reasonPayload,
               })
               .eq('id', existing.id);
             if (!updateErr) {
@@ -366,7 +369,7 @@ class DatabaseService {
               created_at: now,
               last_seen_at: now,
               status: 'pending',
-              reason: reason || 'Not matched with verified knowledge base',
+              reason: reasonPayload,
             });
             if (!insertErr) {
               return { success: true, isDatabasePersisted: true };
@@ -384,20 +387,67 @@ class DatabaseService {
       existingMemory.occurrenceCount += 1;
       existingMemory.lastSeenAt = now;
       existingMemory.question = question;
+      existingMemory.category = category;
       if (reason) existingMemory.reason = reason;
+      if (suggestedAnswer) existingMemory.suggestedAnswer = suggestedAnswer;
     } else {
       this.memoryUnanswered.set(normalizedQuestion, {
         id: crypto.randomUUID(),
         question,
         normalizedQuestion,
         occurrenceCount: 1,
+        category,
         createdAt: now,
         lastSeenAt: now,
         status: 'pending',
         reason,
+        suggestedAnswer,
       });
     }
     return { success: true, isDatabasePersisted: false };
+  }
+
+  public async getUnansweredQuestions(): Promise<UnansweredQuestionRecord[]> {
+    if (this.isConfigured && this.client && this.isConnected) {
+      try {
+        const { data, error } = await this.client
+          .from('unanswered_questions')
+          .select('*')
+          .order('occurrence_count', { ascending: false })
+          .limit(50);
+
+        if (!error && data) {
+          return data.map((d: any) => {
+            let cat = 'general';
+            let sug: string | undefined = undefined;
+            if (d.reason) {
+              const catMatch = d.reason.match(/\[Category:\s*([^\]]+)\]/);
+              if (catMatch) cat = catMatch[1];
+              const sugMatch = d.reason.match(/\|\s*Suggestion:\s*(.+)$/);
+              if (sugMatch) sug = sugMatch[1];
+            }
+            return {
+              id: d.id,
+              question: d.question,
+              normalizedQuestion: d.normalized_question,
+              occurrenceCount: d.occurrence_count || 1,
+              category: cat,
+              createdAt: d.created_at,
+              lastSeenAt: d.last_seen_at,
+              status: d.status || 'pending',
+              reason: d.reason,
+              suggestedAnswer: sug,
+            };
+          });
+        }
+      } catch {
+        // Fall back to memory
+      }
+    }
+
+    return Array.from(this.memoryUnanswered.values()).sort(
+      (a, b) => b.occurrenceCount - a.occurrenceCount
+    );
   }
 
   public async saveFeedback(messageId: string, feedbackType: 'helpful' | 'not_helpful'): Promise<boolean> {
@@ -417,7 +467,6 @@ class DatabaseService {
       }
     }
 
-    // In-memory fallback
     this.memoryFeedback.push({
       id: crypto.randomUUID(),
       messageId,

@@ -5,6 +5,7 @@ export type MessageIntent =
   | 'greeting'
   | 'thanks'
   | 'farewell'
+  | 'acknowledgment'
   | 'identity'
   | 'clarification_giftcode'
   | 'clarification_payment'
@@ -22,22 +23,22 @@ export function classifyUserIntent(
   salutation: UserSalutation
 ): IntentClassificationResult {
   const clean = normalizeText(rawText);
-  const noAccent = removeVietnameseAccents(clean);
+  const noAccent = removeVietnameseAccents(clean).toLowerCase().replace(/\s+/g, ' ').trim();
 
   // Address labels
   const userPronoun = salutation === 'anh' ? 'anh' : salutation === 'chi' ? 'chị' : 'anh/chị';
+  const userPronounCap = salutation === 'anh' ? 'Anh' : salutation === 'chi' ? 'Chị' : 'Anh/chị';
   const politeGreeting = salutation === 'anh' ? 'Dạ thưa anh,' : salutation === 'chi' ? 'Dạ thưa chị,' : 'Dạ,';
 
   // 1. Clarification Intents (Check before pure greetings)
   // Clarification: Generic giftcode inquiry without asking for specific list or redemption steps
   const giftcodeInquiryRegex = /^(anh|chi|em|toi|minh)?\s*(muon|can|cho)?\s*hoi\s*(ve\s*)?(giftcode|gift\s*code|code)\s*(a|em|nhe|ha\s*em)?$/i;
-  const giftcodeInquiryNoAccent = noAccent.replace(/\s+/g, ' ');
   if (
-    giftcodeInquiryRegex.test(giftcodeInquiryNoAccent) ||
-    giftcodeInquiryNoAccent === 'anh muon hoi ve giftcode' ||
-    giftcodeInquiryNoAccent === 'chi muon hoi ve giftcode' ||
-    giftcodeInquiryNoAccent === 'hoi ve giftcode' ||
-    giftcodeInquiryNoAccent === 'tu van giftcode'
+    giftcodeInquiryRegex.test(noAccent) ||
+    noAccent === 'anh muon hoi ve giftcode' ||
+    noAccent === 'chi muon hoi ve giftcode' ||
+    noAccent === 'hoi ve giftcode' ||
+    noAccent === 'tu van giftcode'
   ) {
     return {
       intent: 'clarification_giftcode',
@@ -57,9 +58,7 @@ export function classifyUserIntent(
   ) {
     return {
       intent: 'clarification_payment',
-      directAnswer: `${politeGreeting} em có thể hướng dẫn ${userPronoun} cách nạp tiền vào game ạ. ${
-        salutation === 'anh' ? 'Anh' : salutation === 'chi' ? 'Chị' : 'Anh/chị'
-      } muốn tìm hiểu cách nạp SohaCoin hay chuyển khoản ngân hàng ạ?`,
+      directAnswer: `${politeGreeting} em có thể hướng dẫn ${userPronoun} cách nạp tiền vào game ạ. ${userPronounCap} muốn tìm hiểu cách nạp SohaCoin hay chuyển khoản ngân hàng ạ?`,
       isSocial: true,
     };
   }
@@ -79,96 +78,97 @@ export function classifyUserIntent(
     };
   }
 
-  // 2. Pure Greetings
-  const greetingPhrases = [
-    'xin chao',
-    'chao',
-    'chao em',
-    'chao ngan nhi',
-    'xin chao ngan nhi',
-    'hello',
-    'hi',
-    'hi em',
-    'hi ngan nhi',
-    'alo',
-    'alo em',
-    'em oi',
-    'ngan nhi oi',
-    'chao buoi sang',
-    'good morning',
-    'chao buoi toi',
-    'good evening',
-    'good afternoon',
-    'chao ban',
-    'helo',
-    'he lo',
-    'hai',
-    'chao e',
-  ];
+  // 2. Greetings
+  // Handles: "xin chào", "chào em", "hello", "hi", "alo", "em ơi", "ngân nhi ơi", "anh chào em", "chào buổi sáng", etc.
+  const isGreeting =
+    /^(xin\s*chao|chao|hello|hi|alo|helo|hai)(\s+(em|ngan\s*nhi|ban|moi\s*nguoi|e|nhe|nha|a))?$/i.test(noAccent) ||
+    /^(anh|chi|em|minh)\s+(chao\s*(em|ngan\s*nhi|e)?|xin\s*chao)(\s*(a|nhe|nha))?$/i.test(noAccent) ||
+    /^(em|ngan\s*nhi)\s+oi(\s*(a|nhe|nha))?$/i.test(noAccent) ||
+    /^(chao\s+buoi\s+(sang|trua|chieu|toi)|good\s+(morning|afternoon|evening))(\s*(a|nhe|nha))?$/i.test(noAccent);
 
-  const isExactGreeting = greetingPhrases.some((g) => noAccent === g);
-  const isGreetingPattern =
-    /^(xin\s*chao|chao\s*(em|ngan\s*nhi|ban|e)?|hello|hi|alo|em\s*oi|good\s*(morning|evening|afternoon))(\s*(ngan\s*nhi|em|nhe|nha|a))?$/i.test(
-      noAccent
-    );
-
-  if (isExactGreeting || isGreetingPattern) {
+  if (isGreeting) {
     return {
       intent: 'greeting',
-      directAnswer: `Dạ, Ngân Nhi xin chào ${userPronoun} ạ! ${
-        salutation === 'anh' ? 'Anh' : salutation === 'chi' ? 'Chị' : 'Anh/chị'
-      } cần em hỗ trợ gì về Tam Quốc Tứ Thời Ca hôm nay ạ?`,
+      directAnswer: `Dạ, Ngân Nhi xin chào ${userPronoun} ạ! Hôm nay ${userPronoun} muốn tìm hiểu điều gì về Tam Quốc Tứ Thời Ca ạ?`,
       isSocial: true,
     };
   }
 
-  // 3. Thanks
-  const thanksPhrases = [
-    'cam on',
-    'cam on em',
-    'cam on nhe',
-    'cam on nha',
-    'cam on ngan nhi',
-    'thank you',
-    'thanks',
-    'tks',
-    'thank',
-    'cam on ban',
-    'da cam on',
-    'cam on nhieu',
-  ];
-
+  // 3. Thanks and Appreciation
+  // Handles: "anh cảm ơn", "chị cảm ơn", "cảm ơn em", "cảm ơn nhé", "cảm ơn nha", "cảm ơn", "thank you", "thanks", "tks", etc.
   const isThanks =
-    thanksPhrases.some((t) => noAccent === t) ||
-    /^(cam\s*on|thank\s*you|thanks|tks)(\s*(em|ngan\s*nhi|nhe|nha|nhieu|a))?$/i.test(noAccent);
+    /^(anh|chi|em|minh)?\s*(cam\s*on|thank\s*you|thanks|tks|cam\s*on\s*nhieu|da\s*cam\s*on)(\s+(em|ngan\s*nhi|ban|nhe|nha|nhieu|a|nhieu\s*nha|e))?$/i.test(
+      noAccent
+    ) ||
+    noAccent === 'anh cam on' ||
+    noAccent === 'chi cam on' ||
+    noAccent === 'cam on em' ||
+    noAccent === 'cam on nhe' ||
+    noAccent === 'cam on' ||
+    noAccent === 'thank you' ||
+    noAccent === 'thanks em';
 
   if (isThanks) {
     return {
       intent: 'thanks',
-      directAnswer: `Dạ, không có gì ạ! ${
-        salutation === 'anh' ? 'Anh' : salutation === 'chi' ? 'Chị' : 'Anh/chị'
-      } cần hỗ trợ thêm gì thì cứ hỏi Ngân Nhi nhé.`,
+      directAnswer: `Dạ, không có gì đâu ${userPronoun} ạ! ${userPronounCap} cần em hỗ trợ thêm về Tam Quốc Tứ Thời Ca thì cứ hỏi em nhé.`,
       isSocial: true,
     };
   }
 
-  // 4. Farewell
-  const farewellPhrases = [
-    'tam biet',
-    'bye',
-    'goodbye',
-    'bye bye',
-    'bai bai',
-    'hen gap lai',
-    'tam biet em',
-    'chuc ngu ngon',
-    'hen gap lai em',
-    'chuc buoi toi vui ve',
-  ];
+  // 4. Confirmations and Acknowledgments
+  // Handles: "ok em", "ok", "oki", "oke", "được rồi", "hay quá", "tuyệt vời", "tuyệt quá", "chuẩn rồi", "rõ rồi em", "dạ vâng", "vâng ạ", etc.
+  const isSimpleOk = /^(ok|oki|oke|okie|okey)(\s+(em|ngan\s*nhi|nhe|nha|a|e))?$/i.test(noAccent);
+  if (isSimpleOk) {
+    return {
+      intent: 'acknowledgment',
+      directAnswer: 'Dạ vâng ạ!',
+      isSocial: true,
+    };
+  }
 
+  const isPositiveAck =
+    /^(duoc\s*roi|da\s*ro|ro\s*roi|hieu\s*roi|chuan\s*roi|da\s*vang|vang\s*a|vang\s*em|vang)(\s+(em|ngan\s*nhi|nhe|nha|a))?$/i.test(
+      noAccent
+    ) ||
+    noAccent === 'duoc roi' ||
+    noAccent === 'duoc roi em' ||
+    noAccent === 'ro roi em';
+
+  if (isPositiveAck) {
+    return {
+      intent: 'acknowledgment',
+      directAnswer: `Dạ vâng ạ! Nếu cần hỗ trợ thêm thông tin gì về Tam Quốc Tứ Thời Ca, ${userPronoun} cứ nhắn em nhé.`,
+      isSocial: true,
+    };
+  }
+
+  const isCompliment =
+    /^(hay\s*qua|tuyet\s*voi|tuyet\s*qua|hay\s*lam|tot\s*qua|hay\s*that|hop\s*ly)(\s+(em|ngan\s*nhi|nhe|nha|a))?$/i.test(
+      noAccent
+    ) ||
+    noAccent === 'hay qua' ||
+    noAccent === 'tuyet voi' ||
+    noAccent === 'hay lam';
+
+  if (isCompliment) {
+    return {
+      intent: 'acknowledgment',
+      directAnswer: `Dạ, cảm ơn ${userPronoun} ạ! Chúc ${userPronoun} trải nghiệm game Tam Quốc Tứ Thời Ca thật vui vẻ và bách chiến bách thắng nhé!`,
+      isSocial: true,
+    };
+  }
+
+  // 5. Farewell
+  // Handles: "tạm biệt", "bye", "bye em", "tạm biệt em", "hẹn gặp lại", "chúc ngủ ngon", etc.
   const isFarewell =
-    farewellPhrases.some((f) => noAccent === f) ||
-    /^(tam\s*biet|bye(\s*bye)?|goodbye|hen\s*gap\s*lai)(\s*(em|ngan\s*nhi|nhe|nha|a))?$/i.test(noAccent);
+    /^(tam\s*biet|bye(\s*bye)?|goodbye|bai\s*bai|hen\s*gap\s*lai|chuc\s*ngu\s*ngon)(\s+(em|ngan\s*nhi|nhe|nha|a|moi\s*nguoi))?$/i.test(
+      noAccent
+    ) ||
+    noAccent === 'tam biet' ||
+    noAccent === 'bye' ||
+    noAccent === 'bye em' ||
+    noAccent === 'tam biet em';
 
   if (isFarewell) {
     return {
@@ -178,7 +178,7 @@ export function classifyUserIntent(
     };
   }
 
-  // 5. Bot Identity
+  // 6. Bot Identity
   if (
     noAccent === 'em la ai' ||
     noAccent === 'ban la ai' ||
@@ -193,7 +193,7 @@ export function classifyUserIntent(
     };
   }
 
-  // Default: Game-related question to be searched in the verified knowledge base
+  // Default: Game-related question to be answered using knowledge retrieval and AI reasoning
   return {
     intent: 'game_question',
     isSocial: false,

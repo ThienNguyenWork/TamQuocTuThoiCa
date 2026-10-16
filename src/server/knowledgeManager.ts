@@ -43,15 +43,18 @@ const GAMING_SYNONYMS: Record<string, string[]> = {
   'tan thu': ['nguoi moi', 'newbie', 'khoi dau', 'dau game', 'moi choi', 'moi vao game', 'f2p'],
   'doi hinh': ['build team', 'xep team', 'doi hinh chuan', 'lineup', 'bo doi', 'dan tuong'],
   'knb': ['kim nguyen bao', 'vang', 'tien', 'gem', 'ngoc'],
-  'giftcode': ['code', 'ma qua', 'ma qua tang', 'nhan code', 'ma code', 'gift code', 'giftcodes'],
+  'giftcode': ['code', 'ma qua', 'ma qua tang', 'nhan code', 'ma code', 'gift code', 'giftcodes', 'ma thuong', 'giftcode'],
+  'nhap code': ['nhap giftcode', 'nhap o dau', 'cho nao', 'trang nao', 'doi code', 'doi giftcode', 'nap sohagame', 'nap sohagame vn', 'nhap code o dau', 'cach nhap code'],
+  'chua nhan duoc code': ['tai sao chua nhan duoc code', 'sao chua co code', 'chua thay qua', 'code ve cham', 'chua nhan duoc', 'cho code', '30 phut', '2 gio', 'tai sao chua co'],
   'tuong': ['vo tuong', 'hero', 'ssr', 'nhan vat', 'tuong than'],
   'tu thoi': ['bon mua', 'xuan ha thu dong', 'thoi tiet', 'mua', 'mua giai', 'tran phap'],
-  'quan doan': ['bang hoi', 'bang', 'clan', 'guild'],
-  'than binh': ['trang bi', 'vu khi', 'phap bao', 'do dac'],
-  'nap': ['nap the', 'nap tien', 'thanh toan', 'nap game', 'sohacoin', 'chuyen khoan'],
-  'co de': ['ai co de', 'chuong 1.1', 'chuong 1.2', 'gioi han co de'],
+  'quan doan': ['bang hoi', 'bang', 'clan', 'guild', 'gia nhap bang', 'loi ich bang hoi'],
+  'than binh': ['trang bi', 'vu khi', 'phap bao', 'do dac', 'ren do'],
+  'nap': ['nap the', 'nap tien', 'thanh toan', 'nap game', 'sohacoin', 'chuyen khoan', 'ngan hang'],
+  'chuyen khoan': ['chuyen khoan truc tiep', 'sohacoin bang chuyen khoan', 'nap qua ngan hang', 'sohacoin'],
+  'co de': ['ai co de', 'chuong 1.1', 'chuong 1.2', 'gioi han co de', 'chuong 1 1', 'chuong 1 2', 'chuong 2 1', 'tuong co de', 'dung co de'],
   'gia lap': ['mumu player', 'pc', 'may tinh', 'choi tren pc', 'gia lap pc'],
-  'sinh nhat': ['qua sinh nhat', 'code sinh nhat', 'ngay sinh'],
+  'sinh nhat': ['qua sinh nhat', 'code sinh nhat', 'ngay sinh', 'dieu kien code sinh nhat', '1000000'],
 };
 
 export class KnowledgeManager {
@@ -155,9 +158,9 @@ export class KnowledgeManager {
 
   /**
    * Search knowledge base with Vietnamese tokenization, accent-insensitivity,
-   * alternative questions, keyword matching and synonym expansion.
+   * alternative questions, keyword matching, synonym expansion, and optional context.
    */
-  public search(query: string, limit: number = 3): MatchResult[] {
+  public search(query: string, limit: number = 3, contextText?: string): MatchResult[] {
     const rawClean = normalizeText(query);
     const noAccentQuery = removeVietnameseAccents(rawClean);
     const queryTokens = new Set(noAccentQuery.split(' ').filter((t) => t.length > 1));
@@ -179,6 +182,27 @@ export class KnowledgeManager {
         if (synTokens.every((t) => queryTokens.has(t))) {
           canonicalTokens.forEach((t) => expandedQueryTokens.add(t));
         }
+      }
+    }
+
+    // If context text is provided (from recent conversation turn), enrich tokens for follow-up resolution
+    if (contextText) {
+      const cleanContext = removeVietnameseAccents(normalizeText(contextText));
+      const contextTokens = cleanContext.split(' ').filter((t) => t.length > 2);
+      // Key game entities to look for in context: co de, giftcode, knb, nap the, sinh nhat, tuan, server, etc.
+      const importantEntities = ['co de', 'giftcode', 'code', 'sinh nhat', 'nap the', 'sohacoin', 'bang hoi', 'quan doan', 'tu thoi', 'than binh'];
+      for (const entity of importantEntities) {
+        if (cleanContext.includes(entity)) {
+          entity.split(' ').forEach((t) => expandedQueryTokens.add(t));
+        }
+      }
+      // Also add nouns from context if the query looks like a short follow-up
+      if (queryTokens.size <= 5) {
+        contextTokens.slice(0, 10).forEach((t) => {
+          if (!['chao', 'ngan', 'nhi', 'ban', 'thua', 'duoc', 'khong', 'nhu', 'the'].includes(t)) {
+            expandedQueryTokens.add(t);
+          }
+        });
       }
     }
 
@@ -225,6 +249,7 @@ export class KnowledgeManager {
           altNoAccent.includes(noAccentQuery)
         ) {
           maxScore = Math.max(maxScore, 0.82);
+          bestMatchType = 'high_similarity';
           matchedPhrases.push(alt);
         }
       }
@@ -275,13 +300,12 @@ export class KnowledgeManager {
       }
 
       if (keywordHits > 0) {
-        const keywordScore = Math.min(0.8, (keywordHits / Math.max(entry.keywords.length, 2)) * 0.7 + 0.25);
+        const keywordScore = Math.min(0.85, (keywordHits / Math.max(entry.keywords.length, 2)) * 0.7 + 0.3);
         if (keywordScore > maxScore) {
           maxScore = keywordScore;
           bestMatchType = 'keyword_match';
         } else {
-          // boost slightly if keywords match
-          maxScore = Math.min(0.95, maxScore + keywordHits * 0.05);
+          maxScore = Math.min(0.96, maxScore + keywordHits * 0.05);
         }
       }
 

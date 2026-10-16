@@ -126,6 +126,15 @@ export default function App() {
       // ignore
     }
   };
+interface UnansweredItem {
+  id: string;
+  question: string;
+  occurrenceCount: number;
+  category: string;
+  reason?: string;
+  suggestedAnswer?: string;
+}
+
   const [showInfoModal, setShowInfoModal] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -133,8 +142,27 @@ export default function App() {
   const [isRecheckingDb, setIsRecheckingDb] = useState(false);
   const [sqlCopied, setSqlCopied] = useState(false);
 
+  const [unansweredList, setUnansweredList] = useState<UnansweredItem[]>([]);
+  const [isLoadingUnanswered, setIsLoadingUnanswered] = useState(false);
+  const [copiedJsonId, setCopiedJsonId] = useState<string | null>(null);
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const fetchUnanswered = async () => {
+    setIsLoadingUnanswered(true);
+    try {
+      const res = await fetch('/api/knowledge/unanswered');
+      if (res.ok) {
+        const data = await res.json();
+        setUnansweredList(data.unanswered || []);
+      }
+    } catch (err) {
+      console.warn('Failed to load unanswered questions:', err);
+    } finally {
+      setIsLoadingUnanswered(false);
+    }
+  };
 
   // Load session, system health, and history on mount
   useEffect(() => {
@@ -416,7 +444,10 @@ export default function App() {
 
             {/* System Info / Status Modal Button */}
             <button
-              onClick={() => setShowInfoModal(true)}
+              onClick={() => {
+                setShowInfoModal(true);
+                fetchUnanswered();
+              }}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs transition-all shadow-sm ${
                 systemHealth?.database?.connected
                   ? 'border-emerald-800/60 bg-emerald-950/40 text-emerald-300 hover:bg-emerald-950/70'
@@ -874,6 +905,85 @@ export default function App() {
                 <p className="text-xs text-stone-400">
                   Ngân Nhi chỉ tinh chỉnh diễn đạt câu trả lời theo đúng tôn chỉ nhân vật và xưng hô (anh/chị), hoàn toàn KHÔNG tự bịa đặt cơ chế hoặc chỉ số game chưa được kiểm duyệt.
                 </p>
+              </div>
+
+              {/* Continuous Knowledge Improvement Review */}
+              <div className="bg-stone-950/80 p-3.5 rounded-xl border border-stone-800/80 space-y-2">
+                <div className="flex items-center justify-between font-semibold text-amber-300">
+                  <span className="flex items-center gap-1.5">
+                    <HelpCircle className="w-4 h-4 text-amber-400" />
+                    4. Thu thập & Cải thiện tri thức (Gợi ý duyệt mã)
+                  </span>
+                  <button
+                    onClick={fetchUnanswered}
+                    disabled={isLoadingUnanswered}
+                    className="p-1 text-stone-400 hover:text-amber-300 rounded hover:bg-stone-800 text-xs flex items-center gap-1 disabled:opacity-50"
+                    title="Tải lại danh sách câu hỏi chưa có câu trả lời"
+                  >
+                    <RefreshCw className={`w-3.5 h-3.5 ${isLoadingUnanswered ? 'animate-spin text-amber-400' : ''}`} />
+                    <span className="text-[11px]">Tải lại</span>
+                  </button>
+                </div>
+                <p className="text-xs text-stone-400">
+                  Các câu hỏi chưa có trong cẩm nang được hệ thống tự động ghi nhận và tạo gợi ý trả lời từ AI để bạn dễ dàng sao chép đưa vào file <code className="text-amber-300">src/data/gameKnowledge.json</code>.
+                </p>
+
+                {unansweredList.length === 0 ? (
+                  <div className="p-2.5 rounded-lg bg-stone-900/50 border border-stone-800 text-[11px] text-stone-400 text-center">
+                    Chưa có câu hỏi nào chưa được giải đáp.
+                  </div>
+                ) : (
+                  <div className="space-y-2 max-h-44 overflow-y-auto pr-1">
+                    {unansweredList.slice(0, 8).map((item) => (
+                      <div key={item.id} className="p-2.5 rounded-lg bg-stone-900 border border-stone-800/80 space-y-1.5 text-xs">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="font-medium text-stone-200 truncate flex-1">{item.question}</span>
+                          <span className="px-1.5 py-0.5 rounded bg-amber-950/80 border border-amber-800/60 text-amber-300 text-[10px] shrink-0">
+                            {item.occurrenceCount} lượt hỏi · {item.category}
+                          </span>
+                        </div>
+                        {item.suggestedAnswer && (
+                          <div className="p-1.5 rounded bg-stone-950/70 border border-stone-800/60 text-[11px] text-stone-300">
+                            <span className="text-amber-400 font-medium">Gợi ý AI: </span>
+                            {item.suggestedAnswer}
+                          </div>
+                        )}
+                        <div className="flex justify-end">
+                          <button
+                            onClick={() => {
+                              const tpl = {
+                                id: `${item.category}_${Date.now()}`,
+                                category: item.category,
+                                question: item.question,
+                                alternativeQuestions: [],
+                                answer: item.suggestedAnswer || "Nội dung câu trả lời chuẩn xác đã kiểm duyệt.",
+                                keywords: item.question.toLowerCase().split(' ').filter(w => w.length > 2),
+                                source: "User question community feedback",
+                                lastUpdated: new Date().toISOString().split('T')[0]
+                              };
+                              navigator.clipboard.writeText(JSON.stringify(tpl, null, 2));
+                              setCopiedJsonId(item.id);
+                              setTimeout(() => setCopiedJsonId(null), 2500);
+                            }}
+                            className="text-[10px] px-2 py-0.5 rounded bg-amber-600/30 hover:bg-amber-600/50 border border-amber-600/40 text-amber-300 transition-colors flex items-center gap-1"
+                          >
+                            {copiedJsonId === item.id ? (
+                              <>
+                                <Check className="w-3 h-3 text-emerald-400" />
+                                <span>Đã sao chép JSON!</span>
+                              </>
+                            ) : (
+                              <>
+                                <Copy className="w-3 h-3" />
+                                <span>Sao chép mẫu JSON</span>
+                              </>
+                            )}
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
               {/* Instructions to publish knowledge */}

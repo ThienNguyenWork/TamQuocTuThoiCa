@@ -120,6 +120,19 @@ const handleHistory = async (req: Request, res: Response) => {
 app.get('/api/history', handleHistory);
 app.get('/api/chat/history', handleHistory);
 
+// Categorization helper for unanswered game questions
+export function categorizeGameQuestion(text: string): string {
+  const clean = text.toLowerCase();
+  if (/code|giftcode|ma qua|qua tang/i.test(clean)) return 'giftcodes';
+  if (/nap|the|tien|sohacoin|chuyen khoan|ngan hang/i.test(clean)) return 'top_ups';
+  if (/su kien|event|dua top|sinh nhat|lich trinh|server moi|khi nao ra/i.test(clean)) return 'events';
+  if (/doi hinh|build team|xep team|tran phap/i.test(clean)) return 'formations';
+  if (/tuong|nhan vat|ssr|hero|co de|quan vu|trieu van|lu bo|tuong than/i.test(clean)) return 'characters';
+  if (/loi|lag|mat ket noi|khong vao duoc|mat nick|tai khoan|ho tro|ky thuat/i.test(clean)) return 'technical';
+  if (/knb|vang|trang bi|than binh|bang hoi|quan doan|tu thoi|mua|nhiem vu/i.test(clean)) return 'gameplay';
+  return 'general';
+}
+
 // ==============================================================================
 // 4. Chat Endpoint: /api/chat
 // ==============================================================================
@@ -145,6 +158,13 @@ app.post('/api/chat', async (req: Request, res: Response) => {
 
   const session = await dbService.getOrCreateSession(tokenHash);
 
+  // Retrieve prior session messages for conversational context & follow-ups
+  const sessionMessages = await dbService.getSessionMessages(session.id);
+  const recentContext = sessionMessages
+    .slice(-3)
+    .map((m) => m.content)
+    .join(' ');
+
   // 1. Save user question
   await dbService.saveChatMessage({
     sessionId: session.id,
@@ -153,13 +173,13 @@ app.post('/api/chat', async (req: Request, res: Response) => {
     answerStatus: 'grounded',
   });
 
-  // 1. Intent Classification: Greetings, Social Conversation, and Clarifications
+  // 2. Intent Classification: Greetings, Thanks, Acknowledgments, Social interactions
   const intentResult = classifyUserIntent(cleanQuestion, salutation);
 
   if (intentResult.isSocial && intentResult.directAnswer) {
     const assistantAnswer = intentResult.directAnswer;
 
-    // Save assistant response to chat_messages (social interactions are NOT unanswered questions)
+    // Save assistant response to chat_messages (social messages are NEVER recorded as unanswered)
     const savedAssistantMsg = await dbService.saveChatMessage({
       sessionId: session.id,
       role: 'assistant',
@@ -184,8 +204,8 @@ app.post('/api/chat', async (req: Request, res: Response) => {
     return;
   }
 
-  // 2. Search verified knowledge base for game questions
-  const searchResults = defaultKnowledgeManager.search(cleanQuestion, 3);
+  // 3. Search verified knowledge base (using query and recent conversation context)
+  const searchResults = defaultKnowledgeManager.search(cleanQuestion, 4, recentContext);
   const MATCH_THRESHOLD = 0.35;
 
   const validMatches = searchResults.filter((r) => r.score >= MATCH_THRESHOLD);
@@ -195,21 +215,29 @@ app.post('/api/chat', async (req: Request, res: Response) => {
   const matchedEntries = validMatches.map((m) => m.entry);
   const matchedIds = matchedEntries.map((m) => m.id);
 
-  // 3. Generate grounded response or honest unsupported notice
+  // 4. Generate grounded AI response or honest limitation notice
   let assistantAnswer = '';
   let usedGemini = false;
 
   if (isGrounded) {
+    const historyPayload = sessionMessages.map((m) => ({
+      role: m.role as 'user' | 'assistant',
+      content: m.content,
+    }));
+
     const result = await defaultGeminiService.generateGroundedAnswer({
       userQuestion: cleanQuestion,
       salutation,
       matchedEntries,
+      conversationHistory: historyPayload,
     });
+
     assistantAnswer = result.answer;
     usedGemini = result.usedGemini;
   } else {
     // Genuine game question without verified answer
     const userPronoun = salutation === 'anh' ? 'anh' : salutation === 'chi' ? 'chị' : 'anh/chị';
+    const category = categorizeGameQuestion(cleanQuestion);
 
     const normalized = cleanQuestion
       .toLowerCase()
@@ -217,20 +245,43 @@ app.post('/api/chat', async (req: Request, res: Response) => {
       .replace(/\s+/g, ' ')
       .trim();
 
-    const dbResult = await dbService.recordUnansweredQuestion(
-      cleanQuestion,
-      normalized,
-      `Match score ${matchScore.toFixed(3)} below threshold ${MATCH_THRESHOLD}`
-    );
+    // Generate an AI draft suggestion for reviewer without treating it as verified fact
+    const suggestedDraft = await defaultGeminiService.generateSuggestedAnswer(cleanQuestion, category);
 
-    let fallbackText = `Dạ, hiện tại em chưa có đủ thông tin đã kiểm chứng để trả lời chính xác câu hỏi này. Em không muốn cung cấp thông tin sai cho ${userPronoun} ạ.`;
+    const dbResult = await dbService.recordUnansweredQuestion({
+      question: cleanQuestion,
+      normalizedQuestion: normalized,
+      category,
+      reason: `Chưa có thông tin kiểm chứng trong cẩm nang (Điểm khớp: ${matchScore.toFixed(3)})`,
+      suggestedAnswer: suggestedDraft,
+    });
+
+    // Provide a helpful, honest explanation from Gemini rather than a repetitive refusal
+    const historyPayload = sessionMessages.map((m) => ({
+      role: m.role as 'user' | 'assistant',
+      content: m.content,
+    }));
+
+    const aiFallback = await defaultGeminiService.generateGroundedAnswer({
+      userQuestion: cleanQuestion,
+      salutation,
+      matchedEntries: [],
+      conversationHistory: historyPayload,
+      isTimeSensitiveOrUnknown: true,
+    });
+
+    let fallbackText = aiFallback.answer;
     if (dbResult && dbResult.isDatabasePersisted) {
-      fallbackText += `\n\n(Câu hỏi của ${userPronoun} đã được hệ thống ghi nhận lại để kiểm tra và cập nhật sau ạ).`;
+      fallbackText += `\n\n(Câu hỏi của ${userPronoun} đã được hệ thống lưu vào Supabase để đối chiếu và bổ sung vào cẩm nang tri thức ạ).`;
+    } else {
+      fallbackText += `\n\n(Câu hỏi của ${userPronoun} đã được ghi nhận trong bộ nhớ tạm để nghiên cứu bổ sung cẩm nang ạ).`;
     }
+
     assistantAnswer = fallbackText;
+    usedGemini = aiFallback.usedGemini;
   }
 
-  // 4. Save assistant response
+  // 5. Save assistant response
   const savedAssistantMsg = await dbService.saveChatMessage({
     sessionId: session.id,
     role: 'assistant',
@@ -258,6 +309,15 @@ app.post('/api/chat', async (req: Request, res: Response) => {
     usedGemini,
     intent: 'game_question',
   });
+});
+
+// ==============================================================================
+// 5. Unanswered Questions Review Endpoint: /api/knowledge/unanswered
+// Allows safe inspection of question gaps and AI suggestions for code-managed updating
+// ==============================================================================
+app.get('/api/knowledge/unanswered', async (_req: Request, res: Response) => {
+  const unanswered = await dbService.getUnansweredQuestions();
+  res.json({ count: unanswered.length, unanswered });
 });
 
 // ==============================================================================
