@@ -1,0 +1,177 @@
+[
+  {
+    "id": "beginner_001",
+    "category": "team_formation",
+    "question": "Người mới nên xây dựng đội hình như thế nào?",
+    "alternativeQuestions": [
+      "Anh nên build đội hình nào cho người mới?",
+      "Tân thủ nên chơi đội hình gì?",
+      "Cách chọn đội hình cho người mới bắt đầu",
+      "Đội hình ban đầu gồm những ai?",
+      "Cách xếp đội hình tân thủ hiệu quả"
+    ],
+    "answer": "Đối với tân thủ mới gia nhập Tam Quốc Tứ Thời Ca, giai đoạn đầu nên ưu tiên xây dựng đội hình cân bằng theo công thức chuẩn: 1 Đỡ Đòn (Tiên Phong/Tanker) + 2 Sát Thương Chủ Lực (1 Sát thương Vật lý, 1 Sát thương Pháp thuật) + 1 Khống Chế + 1 Trợ Thủ/Hồi Máu.\n\n- Đỡ Đòn khởi đầu dễ kiếm: Trương Phi hoặc Tào Nhân (có khiên hộ thân vững chắc).\n- Sát Thương Chủ Lực: Triệu Vân (nhận từ điểm danh tuần, cơ động cao) kết hợp Điêu Thuyền hoặc Chân Cơ.\n- Khống Chế: Hoàng Nguyệt Anh hoặc Quách Gia.\n- Hồi Phục/Trợ Thủ: Thái Diễm hoặc Hoa Đà.\n\nĐội hình này giúp vượt ải Chiến Dịch nhanh chóng, tiết kiệm tối đa đan dược và tài nguyên chuyển đổi tướng sau này.",
+    "keywords": [
+      "tân thủ",
+      "đội hình",
+      "build team",
+      "người mới",
+      "khởi đầu",
+      "giai đoạn đầu",
+      "xếp team"
+    ],
+    "source": "Sổ Tay Chiến Lược Tân Thủ v1.0",
+    "lastUpdated": "2026-10-16"
+  },
+  {
+    "id": "mechanics_001",
+    "category": "gameplay_mechanics",
+    "question": "Cơ chế Tứ Thời (Xuân, Hạ, Thu, Đông) hoạt động như thế nào?",
+    "alternativeQuestions": [
+      "Thời tiết bốn mùa ảnh hưởng trận đánh ra sao?",
+      "Cơ chế tứ thời ca là gì?",
+      "Hiệu ứng Xuân Hạ Thu Đông trong game",
+      "Hệ thống tứ thời thay đổi chiến trường thế nào?"
+    ],
+    "answer": "Cơ chế Tứ Thời là điểm đặc trưng độc nhất của Tam Quốc Tứ Thời Ca. Mỗi ải phụ bản, chiến trường hay mùa giải sẽ chuyển dịch qua 4 mùa với hiệu ứng đặc biệt tác động lên toàn trận:\n\n1. Mùa Xuân (Mộc Vượng): Tăng 15% hiệu quả hồi máu, gia tăng tốc độ tích lũy nộ khí cho tướng Trợ Thủ và hồi phục.\n2. Mùa Hạ (Hỏa Diễm): Tăng 20% sát thương bạo kích và bộc phá thêm sát thương thiêu đốt cho tướng Công hệ Vật lý/Hỏa.\n3. Mùa Thu (Kim Phong): Tăng hiệu lực khống chế (choáng, câm lặng) thêm 1.5 giây, đồng thời giảm 15% giáp toàn bộ phe địch.\n4. Mùa Đông (Hàn Băng): Tăng lớp giáp băng hấp thụ sát thương, đồng thời giảm 20% tốc độ xuất chiêu của đối thủ.\n\nKhi xếp đội hình có tối thiểu 3 tướng đồng hệ với mùa hiện tại, toàn đội sẽ kích hoạt 'Tứ Thời Trận Pháp' tăng thêm 12% chỉ số toàn diện.",
+    "keywords": [
+      "tứ thời",
+      "bốn mùa",
+      "xuân hạ thu đông",
+      "thời tiết",
+      "hiệu ứng mùa",
+      "cơ chế",
+      "mùa xuân",
+      "mùa hạ",
+      "mùa thu",
+      "mùa đông"
+    ],
+    "source": "Hệ Thống Trận Pháp Tứ Thời",
+    "lastUpdated": "2026-10-16"
+  },
+  {
+    "id": "currency_001",
+    "category": "resources",
+    "question": "Cách kiếm Kim Nguyên Bảo (KNB) miễn phí và hiệu quả nhất?",
+    "alternativeQuestions": [
+      "Làm sao để cày KNB nhanh?",
+      "Kiếm vàng/knb ở đâu?",
+      "Mẹo farm kim nguyên bảo cho dân cày",
+      "Cách kiếm knb miễn phí",
+      "Dân cày kiếm knb như thế nào?"
+    ],
+    "answer": "Để tích lũy Kim Nguyên Bảo (KNB) mỗi ngày dồi dào mà không cần nạp thẻ:\n\n1. Hoàn thành trọn vẹn Nhiệm Vụ Hằng Ngày: Đạt mốc 100 điểm năng động nhận ngay 300 KNB kèm vé quay tướng.\n2. Đấu Trường Diễn Võ: Leo hạng đấu trường để nhận KNB kỷ lục lần đầu, đồng thời duy trì top để nhận thưởng kết toán mỗi ngày vào lúc 21:00.\n3. Vượt Tháp Thiên Tầng & Ải Tinh Anh: Mỗi tầng mốc (tầng 5, 10, 15...) thưởng từ 150 - 500 KNB.\n4. Tiệc Rượu Quân Đoàn & Lì Xì Bang: Tham gia đủ các khung giờ tiệc bang để nhặt lì xì KNB rơi tự do từ đồng đội.\n5. Chuỗi Thành Tựu Thao Lược: Hoàn thành các điều kiện chiến tích trong Tam Quốc Chí để nhận hàng ngàn KNB tích lũy.",
+    "keywords": [
+      "kim nguyên bảo",
+      "knb",
+      "kiếm knb",
+      "cày vàng",
+      "dân cày",
+      "miễn phí",
+      "farm vàng",
+      "kiếm tiền"
+    ],
+    "source": "Hướng Dẫn Tài Nguyên & Kinh Tế",
+    "lastUpdated": "2026-10-16"
+  },
+  {
+    "id": "heroes_001",
+    "category": "heroes",
+    "question": "Những tướng nào mạnh nhất đáng nuôi trong giai đoạn đầu và giữa game?",
+    "alternativeQuestions": [
+      "Tướng nào gánh team tốt nhất?",
+      "Nên nuôi tướng nào?",
+      "Top tướng mạnh cho nông dân",
+      "Tướng SSR nào nên dồn tài nguyên?",
+      "Võ tướng nào mạnh nhất?"
+    ],
+    "answer": "Các vị tướng xuất sắc, tỉ lệ gánh đội cực cao và dễ nuôi trong giai đoạn đầu - giữa game gồm:\n\n1. Triệu Vân (Thục - Đấu Sĩ/Cơ Động): Kỹ năng 'Long Đảm Xuất Kích' miễn khống chế và càn quét hàng sau, được tặng miễn phí quà 7 ngày đăng nhập.\n2. Chu Du (Ngô - Pháp Sư Hỏa Thiêu): Sát thương diện rộng bao phủ cả bản đồ, sát thương duy trì cực kỳ khủng khiếp đặc biệt trong Mùa Hạ.\n3. Quách Gia (Ngụy - Khống Chế Tuyệt Đỉnh): Sở hữu khả năng đóng băng và khóa nộ khí đối thủ, giúp khống chế cục diện trận đấu.\n4. Hoa Đà (Quần - Thần Y): Cứu nguy đồng đội với kỹ năng hồi phục toàn thể và xóa toàn bộ hiệu ứng xấu/trúng độc, là trợ thủ quốc dân không bao giờ lỗi thời.",
+    "keywords": [
+      "tướng mạnh",
+      "nuôi tướng",
+      "gánh team",
+      "tier list",
+      "tướng ssr",
+      "triệu vân",
+      "chu du",
+      "quách gia",
+      "hoa đà",
+      "tướng khởi đầu"
+    ],
+    "source": "Bảng Xếp Hạng Võ Tướng v1.2",
+    "lastUpdated": "2026-10-16"
+  },
+  {
+    "id": "giftcode_001",
+    "category": "giftcode",
+    "question": "Cách nhập Giftcode và các mã tân thủ mới nhất của game?",
+    "alternativeQuestions": [
+      "Nhập code ở đâu?",
+      "Có mã giftcode nào không?",
+      "Xin code tân thủ",
+      "Cách đổi mã quà tặng trong game",
+      "Mã code mới nhất là gì?"
+    ],
+    "answer": "Các bước nhập mã quà tặng (Giftcode):\n\n1. Tại giao diện thành chính, nhấn vào biểu tượng Ảnh Đại Diện (Avatar) của nhân vật ở góc trên cùng bên trái.\n2. Chọn tab 'Cài Đặt Hệ Thống' -> nhấn chọn nút 'Đổi Giftcode'.\n3. Nhập chính xác các ký tự mã code (chú ý chữ hoa/thường) rồi bấm 'Nhận Thưởng'.\n4. Mở hòm Thư ingame để nhận vật phẩm gửi về.\n\n*Danh sách mã tân thủ thông dụng:* `TAMQUOC2026`, `TUTHOICA999`, `NGANNHIVIP`, `TANTHU68` (Lưu ý: mỗi mã có thời hạn và dùng 1 lần cho 1 nhân vật).",
+    "keywords": [
+      "giftcode",
+      "code",
+      "mã quà tặng",
+      "nhập code",
+      "code tân thủ",
+      "quà",
+      "đổi quà"
+    ],
+    "source": "Thông Cáo Sự Kiện & Quà Tặng Tân Thủ",
+    "lastUpdated": "2026-10-16"
+  },
+  {
+    "id": "guild_001",
+    "category": "guild_clan",
+    "question": "Tham gia Bang Hội (Quân Đoàn) mang lại những lợi ích gì?",
+    "alternativeQuestions": [
+      "Có nên vào bang sớm không?",
+      "Lợi ích khi vào quân đoàn",
+      "Bang hội có gì hot?",
+      "Tác dụng của quân đoàn",
+      "Vào bang nhận được gì?"
+    ],
+    "answer": "Gia nhập Quân Đoàn càng sớm sẽ giúp tăng lực chiến vượt bậc nhờ 4 quyền lợi độc quyền:\n\n1. Viện Khoa Kỹ Quân Đoàn: Tăng vĩnh viễn % chỉ số Công, Thủ, Máu và Bạo Kích cho toàn bộ đội hình xuất trận.\n2. Cửa Hàng Quân Đoàn: Dùng điểm Cống Hiến nhận được từ điểm danh bang để đổi Mảnh Thần Tướng và Đá Tẩy Luyện Thần Binh cao cấp.\n3. Khiêu Chiến Thần Thú Bang: Đánh boss liên quân hằng ngày nhận Rương Chiến Tướng và KNB chia cổ tức.\n4. Quân Đoàn Chiến Tranh Bá: Chiếm đóng châu quận để nhận bổng lộc hàng tuần và phong hiệu uy danh.",
+    "keywords": [
+      "bang hội",
+      "quân đoàn",
+      "bang",
+      "quân đoàn chiến",
+      "khoa kỹ bang",
+      "lợi ích",
+      "cống hiến bang"
+    ],
+    "source": "Sổ Tay Quân Đoàn Ca",
+    "lastUpdated": "2026-10-16"
+  },
+  {
+    "id": "equipment_001",
+    "category": "equipment_forge",
+    "question": "Làm thế nào để nâng cấp và rèn Thần Binh trang bị hiệu quả?",
+    "alternativeQuestions": [
+      "Cách nâng cấp đồ và thần binh",
+      "Rèn trang bị như thế nào?",
+      "Tẩy luyện thần binh ra sao?",
+      "Nâng sao trang bị",
+      "Cường hóa trang bị hiệu quả"
+    ],
+    "answer": "Bí quyết rèn đúc và tối ưu trang bị trong Tam Quốc Tứ Thời Ca:\n\n1. Kích hoạt Cộng Hưởng Cường Hóa: Hãy cường hóa 4 món trang bị (Vũ Khí, Mão, Giáp, Giày) đồng đều theo các mốc cấp độ (10, 20, 30...) để mở khóa chỉ số cộng hưởng toàn thân.\n2. Tẩy Luyện Đúng Thuộc Tính: Ưu tiên dòng thuộc tính phù hợp theo vai trò (Tướng Công: Bạo kích, Xuyên giáp, Sát thương %; Tướng Thủ: Né tránh, Miễn thương, Kháng bạo).\n3. Thần Binh Trấn Phái: Chỉ kích hoạt và dồn Đá Thần Binh cho Thần Binh bản mệnh của tướng chủ lực để mở khóa kỹ năng thức tỉnh độc quyền (ví dụ Phương Thiên Họa Kích cho Lữ Bố, Thanh Long Đao cho Quan Vũ).",
+    "keywords": [
+      "thần binh",
+      "trang bị",
+      "rèn",
+      "tẩy luyện",
+      "nâng cấp",
+      "cường hóa",
+      "cộng hưởng",
+      "vũ khí"
+    ],
+    "source": "Cẩm Nang Thần Binh Các",
+    "lastUpdated": "2026-10-16"
+  }
+]

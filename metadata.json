@@ -1,0 +1,6 @@
+{
+  "name": "Ngân Nhi - Tam Quốc Tứ Thời Ca AI",
+  "description": "Trợ lý trí tuệ nhân tạo giải đáp game Tam Quốc Tứ Thời Ca với tri thức chuẩn hóa kiểm duyệt và lưu trữ bảo mật.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
