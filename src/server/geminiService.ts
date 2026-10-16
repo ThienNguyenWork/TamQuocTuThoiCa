@@ -1,5 +1,5 @@
 import { GoogleGenAI } from '@google/genai';
-import { GameKnowledgeEntry } from './knowledgeManager.js';
+import { GameKnowledgeEntry, removeVietnameseAccents } from './knowledgeManager.js';
 
 export type UserSalutation = 'anh' | 'chi' | 'neutral';
 
@@ -9,26 +9,30 @@ export function detectSalutation(text: string, explicitChoice?: string): UserSal
   if (explicitChoice === 'neutral') return 'neutral';
 
   const lower = text.toLowerCase();
-  // Check if user addresses as 'anh' or says 'anh muốn', 'anh hỏi', 'anh là'
-  if (/\b(anh|anh muốn|anh hỏi|anh là|anh em)\b/i.test(lower) && !/\b(chị|em gái)\b/i.test(lower)) {
-    return 'anh';
-  }
-  // Check if user addresses as 'chị'
-  if (/\b(chị|chị muốn|chị hỏi|chị là)\b/i.test(lower) && !/\b(anh)\b/i.test(lower)) {
-    return 'chi';
-  }
+  const noAccent = removeVietnameseAccents(lower);
+
+  const hasChi =
+    /(?:^|\s|[.,!?])(chị|chị\s+muốn|chị\s+hỏi|chị\s+là|chị\s+cần)(?:$|\s|[.,!?])/i.test(lower) ||
+    /\b(chi|chi muon|chi hoi|chi la|chi can)\b/i.test(noAccent);
+
+  const hasAnh =
+    /(?:^|\s|[.,!?])(anh|anh\s+muốn|anh\s+hỏi|anh\s+là|anh\s+cần)(?:$|\s|[.,!?])/i.test(lower) ||
+    /\b(anh|anh muon|anh hoi|anh la|anh can)\b/i.test(noAccent);
+
+  if (hasChi && !hasAnh) return 'chi';
+  if (hasAnh && !hasChi) return 'anh';
   return 'neutral';
 }
 
 export function getPersonaOpening(salutation: UserSalutation): string {
   switch (salutation) {
     case 'anh':
-      return 'Dạ thưa anh, về vấn đề này em xin trả lời như sau:';
+      return 'Dạ thưa anh, về vấn đề này em xin hướng dẫn như sau ạ:';
     case 'chi':
-      return 'Dạ thưa chị, về vấn đề này em xin trả lời như sau:';
+      return 'Dạ thưa chị, em xin giải đáp thắc mắc này như sau ạ:';
     case 'neutral':
     default:
-      return 'Dạ, về vấn đề này em xin giải đáp như sau:';
+      return 'Dạ, Ngân Nhi xin phép giải đáp thắc mắc này như sau ạ:';
   }
 }
 
@@ -81,9 +85,11 @@ export class GeminiService {
     const { userQuestion, salutation, matchedEntries } = params;
     const openingPhrase = getPersonaOpening(salutation);
 
+    const addressPronoun = salutation === 'anh' ? 'anh' : salutation === 'chi' ? 'chị' : 'anh/chị';
+
     if (matchedEntries.length === 0) {
       return {
-        answer: `${openingPhrase}\n\nHiện tại trong cơ sở tri thức đã kiểm duyệt của Tam Quốc Tứ Thời Ca, em chưa có thông tin chính xác về câu hỏi này của ${salutation === 'anh' ? 'anh' : salutation === 'chi' ? 'chị' : 'quý đại hiệp'}.\n\nEm đã lưu lại câu hỏi này để các sư huynh/đội ngũ nghiên cứu chiến lược xác minh và cập nhật trong phiên bản kiến thức sớm nhất ạ!`,
+        answer: `Dạ, hiện tại em chưa có đủ thông tin đã kiểm chứng để trả lời chính xác câu hỏi này. Em không muốn cung cấp thông tin sai cho ${addressPronoun} ạ.`,
         usedGemini: false,
       };
     }
@@ -103,16 +109,13 @@ export class GeminiService {
       )
       .join('\n\n---\n\n');
 
-    const addressPronoun = salutation === 'anh' ? 'anh' : salutation === 'chi' ? 'chị' : 'quý đại hiệp';
-
     const systemInstruction = `Bạn là Ngân Nhi - nữ mưu sĩ thông thái, trợ thủ AI giải đáp thắc mắc về game chiến thuật Tam Quốc Tứ Thời Ca.
 QUY TẮC BẮT BUỘC:
-1. XƯNG HÔ: Tự xưng là "em", gọi người dùng là "${addressPronoun}".
-2. CÂU MỞ ĐẦU CHÍNH XÁC: Câu đầu tiên của phản hồi PHẢI LÀ: "${openingPhrase}"
-3. TÔN TRỌNG SỰ THẬT & KHÔNG BỊA ĐẶT: CHỈ ĐƯỢC PHÉP sử dụng thông tin từ [Nguồn Tri Thức Đã Kiểm Duyệt] được cung cấp bên dưới. TUYỆT ĐỐI KHÔNG tự nghĩ ra thêm chỉ số, cơ chế game, giftcode, lịch sự kiện hay tên tướng không có trong tài liệu.
+1. XƯNG HÔ: Luôn tự xưng là "em", gọi người dùng là "${addressPronoun}".
+2. CÂU MỞ ĐẦU CHÍNH XÁC: Bắt đầu câu trả lời một cách tự nhiên và lịch sự với đại từ "${addressPronoun}".
+3. TÔN TRỌNG SỰ THẬT & KHÔNG BỊA ĐẶT: CHỈ ĐƯỢC PHÉP sử dụng thông tin từ [Nguồn Tri Thức Đã Kiểm Duyệt] được cung cấp bên dưới. TUYỆT ĐỐI KHÔNG tự nghĩ ra thêm chỉ số, cơ chế game, giftcode, thời hạn mã, lịch sự kiện hay tên tướng không có trong tài liệu.
 4. KHÔNG MẠO NHẬN: Không tự xưng là nhà phát hành game chính thức hoặc đội ngũ hỗ trợ kỹ thuật chính thức.
-5. VĂN PHONG: Nhã nhặn, tôn trọng, giải thích rõ ràng, súc tích và mạch lạc bằng tiếng Việt.
-6. Nếu có nhiều tri thức liên quan, kết hợp chúng một cách logic và nhất quán.`;
+5. VĂN PHONG: Nhã nhặn, tôn trọng, giải thích rõ ràng, súc tích và mạch lạc bằng tiếng Việt.`;
 
     try {
       const response = await this.ai.models.generateContent({

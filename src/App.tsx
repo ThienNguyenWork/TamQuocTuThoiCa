@@ -55,6 +55,9 @@ interface SystemHealth {
     keyConfigured: boolean;
     message: string;
     mode: 'supabase' | 'in_memory_fallback';
+    statusType?: 'connected' | 'tables_pending_migration' | 'credentials_missing' | 'connection_error';
+    migrationSql?: string;
+    projectRef?: string;
   };
   gemini: {
     configured: boolean;
@@ -62,8 +65,11 @@ interface SystemHealth {
   };
 }
 
-const NGAN_NHI_AVATAR = '/src/assets/images/ngan_nhi_avatar_1792130055214.jpg';
-const NGAN_NHI_BANNER = '/src/assets/images/ngan_nhi_banner_1792130055936.jpg';
+import nganNhiAvatar from './assets/images/ngan_nhi_avatar_1792130055214.jpg';
+import nganNhiBanner from './assets/images/ngan_nhi_banner_1792130055936.jpg';
+
+const NGAN_NHI_AVATAR = nganNhiAvatar || '/assets/images/ngan_nhi_avatar_1792130055214.jpg';
+const NGAN_NHI_BANNER = nganNhiBanner || '/assets/images/ngan_nhi_banner_1792130055936.jpg';
 
 const QUICK_PROMPTS = [
   {
@@ -102,11 +108,30 @@ export default function App() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [salutation, setSalutation] = useState<'auto' | 'anh' | 'chi' | 'neutral'>('auto');
   const [systemHealth, setSystemHealth] = useState<SystemHealth | null>(null);
+  const [salutation, setSalutationState] = useState<'auto' | 'anh' | 'chi' | 'neutral'>(() => {
+    try {
+      const saved = localStorage.getItem('ngan_nhi_salutation');
+      return (saved === 'anh' || saved === 'chi' || saved === 'neutral') ? saved : 'auto';
+    } catch {
+      return 'auto';
+    }
+  });
+
+  const setSalutation = (mode: 'auto' | 'anh' | 'chi' | 'neutral') => {
+    setSalutationState(mode);
+    try {
+      localStorage.setItem('ngan_nhi_salutation', mode);
+    } catch {
+      // ignore
+    }
+  };
   const [showInfoModal, setShowInfoModal] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  const [isRecheckingDb, setIsRecheckingDb] = useState(false);
+  const [sqlCopied, setSqlCopied] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -121,21 +146,45 @@ export default function App() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isLoading]);
 
-  const fetchHealth = async () => {
+  const fetchHealth = async (forceRecheck = false) => {
+    if (forceRecheck) setIsRecheckingDb(true);
     try {
-      const res = await fetch('/api/health');
+      const url = forceRecheck ? '/api/health?recheck=true' : '/api/health';
+      const res = await fetch(url);
       if (res.ok) {
         const data = await res.json();
         setSystemHealth(data);
       }
     } catch (err) {
       console.warn('Failed to load system health:', err);
+    } finally {
+      if (forceRecheck) setIsRecheckingDb(false);
+    }
+  };
+
+  const handleCopyMigrationSql = async () => {
+    try {
+      let sql = systemHealth?.database?.migrationSql;
+      if (!sql) {
+        const res = await fetch('/api/supabase/migration-sql');
+        sql = await res.text();
+      }
+      if (sql) {
+        await navigator.clipboard.writeText(sql);
+        setSqlCopied(true);
+        setTimeout(() => setSqlCopied(false), 2500);
+      }
+    } catch (err) {
+      console.warn('Failed to copy migration SQL:', err);
     }
   };
 
   const fetchHistory = async () => {
     try {
-      const res = await fetch('/api/chat/history');
+      let res = await fetch('/api/history');
+      if (!res.ok) {
+        res = await fetch('/api/chat/history');
+      }
       if (res.ok) {
         const data = await res.json();
         if (data.messages && data.messages.length > 0) {
@@ -245,11 +294,18 @@ export default function App() {
     );
 
     try {
-      await fetch('/api/chat/feedback', {
+      const res = await fetch('/api/feedback', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ messageId, feedbackType }),
       });
+      if (!res.ok) {
+        await fetch('/api/chat/feedback', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ messageId, feedbackType }),
+        });
+      }
     } catch (err) {
       console.warn('Failed to submit feedback:', err);
     }
@@ -314,6 +370,12 @@ export default function App() {
                 alt="Ngân Nhi - Tam Quốc Tứ Thời Ca"
                 className="w-10 h-10 rounded-full object-cover ring-2 ring-amber-500/50 shadow-md shadow-amber-900/30"
                 referrerPolicy="no-referrer"
+                onError={(e) => {
+                  const target = e.currentTarget;
+                  if (!target.src.endsWith('ngan_nhi_avatar_1792130055214.jpg')) {
+                    target.src = '/assets/images/ngan_nhi_avatar_1792130055214.jpg';
+                  }
+                }}
               />
               <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 rounded-full ring-2 ring-stone-950" />
             </div>
@@ -355,14 +417,37 @@ export default function App() {
             {/* System Info / Status Modal Button */}
             <button
               onClick={() => setShowInfoModal(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-stone-800 bg-stone-900 hover:bg-stone-800 hover:border-amber-700/50 text-stone-300 hover:text-amber-300 text-xs transition-all shadow-sm"
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs transition-all shadow-sm ${
+                systemHealth?.database?.connected
+                  ? 'border-emerald-800/60 bg-emerald-950/40 text-emerald-300 hover:bg-emerald-950/70'
+                  : systemHealth?.database?.statusType === 'tables_pending_migration'
+                  ? 'border-amber-700/60 bg-amber-950/40 text-amber-300 hover:bg-amber-950/70'
+                  : 'border-stone-800 bg-stone-900 text-stone-300 hover:bg-stone-800'
+              }`}
               title="Xem kiến trúc tri thức và trạng thái Supabase"
             >
-              <Database className="w-3.5 h-3.5 text-amber-400" />
-              <span className="hidden md:inline">Hệ Thống</span>
+              <Database className="w-3.5 h-3.5" />
+              <span className="hidden md:inline">
+                {systemHealth?.database?.connected
+                  ? 'Supabase PG'
+                  : systemHealth?.database?.statusType === 'tables_pending_migration'
+                  ? 'Supabase (Chờ chạy SQL)'
+                  : 'Hệ Thống'}
+              </span>
               <span className="flex h-2 w-2 relative">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                {systemHealth?.database?.connected ? (
+                  <>
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                  </>
+                ) : systemHealth?.database?.statusType === 'tables_pending_migration' ? (
+                  <>
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
+                  </>
+                ) : (
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-stone-500"></span>
+                )}
               </span>
             </button>
           </div>
@@ -380,6 +465,12 @@ export default function App() {
                 alt="Tam Quốc Tứ Thời Ca"
                 className="w-full h-full object-cover object-center filter brightness-90 contrast-105"
                 referrerPolicy="no-referrer"
+                onError={(e) => {
+                  const target = e.currentTarget;
+                  if (!target.src.endsWith('ngan_nhi_banner_1792130055936.jpg')) {
+                    target.src = '/assets/images/ngan_nhi_banner_1792130055936.jpg';
+                  }
+                }}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-stone-950 via-stone-950/40 to-transparent" />
               <div className="absolute bottom-3 left-4 sm:left-6 right-4 flex items-end justify-between">
@@ -438,6 +529,12 @@ export default function App() {
                     alt="Ngân Nhi"
                     className="w-9 h-9 rounded-full object-cover ring-2 ring-amber-500/40 shrink-0 self-start shadow-sm mt-1"
                     referrerPolicy="no-referrer"
+                    onError={(e) => {
+                      const target = e.currentTarget;
+                      if (!target.src.endsWith('ngan_nhi_avatar_1792130055214.jpg')) {
+                        target.src = '/assets/images/ngan_nhi_avatar_1792130055214.jpg';
+                      }
+                    }}
                   />
                 )}
 
@@ -564,6 +661,12 @@ export default function App() {
                 alt="Ngân Nhi"
                 className="w-9 h-9 rounded-full object-cover ring-2 ring-amber-500/40 shrink-0 shadow-sm mt-1"
                 referrerPolicy="no-referrer"
+                onError={(e) => {
+                  const target = e.currentTarget;
+                  if (!target.src.endsWith('ngan_nhi_avatar_1792130055214.jpg')) {
+                    target.src = '/assets/images/ngan_nhi_avatar_1792130055214.jpg';
+                  }
+                }}
               />
               <div className="rounded-2xl rounded-tl-none px-4 py-3 bg-stone-900 border border-stone-800 text-stone-300 text-sm flex items-center gap-2 shadow-md">
                 <span className="inline-block w-2 h-2 bg-amber-400 rounded-full animate-bounce [animation-delay:-0.3s]"></span>
@@ -673,7 +776,7 @@ export default function App() {
                 </p>
               </div>
 
-              <div className="bg-stone-950/80 p-3.5 rounded-xl border border-stone-800/80 space-y-2">
+              <div className="bg-stone-950/80 p-3.5 rounded-xl border border-stone-800/80 space-y-2.5">
                 <div className="flex items-center justify-between font-semibold text-amber-300">
                   <span className="flex items-center gap-1.5">
                     <Database className="w-4 h-4 text-amber-400" />
@@ -681,53 +784,81 @@ export default function App() {
                   </span>
                   <div className="flex items-center gap-2">
                     <button
-                      onClick={fetchHealth}
-                      className="p-1 text-stone-400 hover:text-amber-300 rounded hover:bg-stone-800"
-                      title="Kiểm tra lại kết nối"
+                      onClick={() => fetchHealth(true)}
+                      disabled={isRecheckingDb}
+                      className="p-1.5 text-stone-400 hover:text-amber-300 rounded hover:bg-stone-800 transition-colors disabled:opacity-50"
+                      title="Kiểm tra lại kết nối Supabase"
                     >
-                      <RefreshCw className="w-3.5 h-3.5" />
+                      <RefreshCw className={`w-3.5 h-3.5 ${isRecheckingDb ? 'animate-spin text-amber-400' : ''}`} />
                     </button>
                     <span
                       className={`text-xs px-2 py-0.5 rounded border ${
                         systemHealth?.database.connected
                           ? 'bg-emerald-950 text-emerald-400 border-emerald-800/40'
-                          : 'bg-amber-950 text-amber-400 border-amber-800/40'
+                          : systemHealth?.database.statusType === 'tables_pending_migration'
+                          ? 'bg-amber-950 text-amber-400 border-amber-800/40'
+                          : 'bg-stone-900 text-stone-400 border-stone-800'
                       }`}
                     >
                       {systemHealth?.database.connected
                         ? 'Supabase Đã Kết Nối'
-                        : 'Credentials OK (Cần Chạy SQL Migration)'}
+                        : systemHealth?.database.statusType === 'tables_pending_migration'
+                        ? 'Chờ Chạy SQL Migration'
+                        : 'Lưu Trữ Bộ Nhớ Đệm'}
                     </span>
                   </div>
                 </div>
+
                 <p className="text-xs text-stone-400">
                   {systemHealth?.database.message}
                 </p>
-                <div className="text-[11px] text-stone-400 pt-1 border-t border-stone-800/60 flex flex-col gap-1.5">
-                  <div className="flex items-center justify-between">
-                    <span>File migration: <code className="text-amber-300">supabase/migrations/20261016000000_init_ngan_nhi.sql</code></span>
-                    <button
-                      onClick={async () => {
-                        try {
-                          const res = await fetch('/api/migration/sql');
-                          const data = await res.json();
-                          if (data.sql) {
-                            navigator.clipboard.writeText(data.sql);
-                            alert('Đã sao chép toàn bộ mã SQL Migration vào Clipboard! Bạn chỉ cần dán vào Supabase SQL Editor và bấm Run.');
-                          }
-                        } catch (e) {
-                          console.error(e);
-                        }
-                      }}
-                      className="px-2 py-0.5 rounded bg-amber-600/30 hover:bg-amber-600/50 border border-amber-600/50 text-amber-300 text-[10px] font-medium transition-colors"
-                    >
-                      Sao chép SQL Migration
-                    </button>
+
+                {/* Migration Instruction Box */}
+                {!systemHealth?.database.connected && (
+                  <div className="rounded-lg bg-stone-900/90 border border-amber-800/40 p-3 space-y-2 text-xs">
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium text-amber-300">
+                        ⚡ Kích hoạt Supabase chỉ với 1 bước SQL:
+                      </span>
+                      <button
+                        onClick={handleCopyMigrationSql}
+                        className={`flex items-center gap-1.5 px-2.5 py-1 rounded border text-[11px] font-medium transition-all ${
+                          sqlCopied
+                            ? 'bg-emerald-950/80 border-emerald-600/60 text-emerald-300'
+                            : 'bg-amber-600/30 hover:bg-amber-600/50 border-amber-600/50 text-amber-200'
+                        }`}
+                      >
+                        {sqlCopied ? (
+                          <>
+                            <Check className="w-3.5 h-3.5 text-emerald-400" />
+                            <span>Đã sao chép SQL!</span>
+                          </>
+                        ) : (
+                          <>
+                            <Copy className="w-3.5 h-3.5 text-amber-300" />
+                            <span>Sao chép mã SQL Migration</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
+
+                    <ol className="list-decimal list-inside space-y-1 text-[11px] text-stone-400 pl-0.5">
+                      <li>
+                        Bấm nút <strong className="text-amber-200">Sao chép mã SQL Migration</strong> ở trên.
+                      </li>
+                      <li>
+                        Vào <strong className="text-amber-200">Supabase Dashboard</strong> &gt; chọn project của bạn &gt; mở menu <strong className="text-amber-200">SQL Editor</strong>.
+                      </li>
+                      <li>
+                        Dán nội dung SQL vào và bấm <strong className="text-emerald-400">Run</strong>. Sau đó quay lại đây bấm biểu tượng xoay <RefreshCw className="inline w-3 h-3 text-amber-300" /> để đồng bộ.
+                      </li>
+                    </ol>
+
+                    <div className="pt-1 border-t border-stone-800 text-[10px] text-stone-500">
+                      File mã nguồn: <code>supabase/migrations/20261016000000_init_ngan_nhi.sql</code>
+                    </div>
                   </div>
-                  <span className="text-[10px] text-stone-500">
-                    Mở Supabase Dashboard &gt; SQL Editor &gt; New Query &gt; Dán mã SQL và bấm "Run" để hoàn tất tạo 4 bảng.
-                  </span>
-                </div>
+                )}
               </div>
 
               <div className="bg-stone-950/80 p-3.5 rounded-xl border border-stone-800/80 space-y-1.5">

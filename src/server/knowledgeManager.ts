@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import bundledKnowledge from '../data/gameKnowledge.json' with { type: 'json' };
 
 export interface GameKnowledgeEntry {
   id: string;
@@ -42,11 +43,15 @@ const GAMING_SYNONYMS: Record<string, string[]> = {
   'tan thu': ['nguoi moi', 'newbie', 'khoi dau', 'dau game', 'moi choi', 'moi vao game', 'f2p'],
   'doi hinh': ['build team', 'xep team', 'doi hinh chuan', 'lineup', 'bo doi', 'dan tuong'],
   'knb': ['kim nguyen bao', 'vang', 'tien', 'gem', 'ngoc'],
-  'giftcode': ['code', 'ma qua', 'ma qua tang', 'nhan code', 'ma code', 'gift code'],
+  'giftcode': ['code', 'ma qua', 'ma qua tang', 'nhan code', 'ma code', 'gift code', 'giftcodes'],
   'tuong': ['vo tuong', 'hero', 'ssr', 'nhan vat', 'tuong than'],
   'tu thoi': ['bon mua', 'xuan ha thu dong', 'thoi tiet', 'mua', 'mua giai', 'tran phap'],
   'quan doan': ['bang hoi', 'bang', 'clan', 'guild'],
   'than binh': ['trang bi', 'vu khi', 'phap bao', 'do dac'],
+  'nap': ['nap the', 'nap tien', 'thanh toan', 'nap game', 'sohacoin', 'chuyen khoan'],
+  'co de': ['ai co de', 'chuong 1.1', 'chuong 1.2', 'gioi han co de'],
+  'gia lap': ['mumu player', 'pc', 'may tinh', 'choi tren pc', 'gia lap pc'],
+  'sinh nhat': ['qua sinh nhat', 'code sinh nhat', 'ngay sinh'],
 };
 
 export class KnowledgeManager {
@@ -63,14 +68,20 @@ export class KnowledgeManager {
   public reloadKnowledge(): { success: boolean; count: number; errors: string[] } {
     this.validationErrors = [];
     try {
-      if (!fs.existsSync(this.filePath)) {
+      let rawData: unknown = null;
+
+      // Try reading from file path if it exists on disk
+      if (fs.existsSync(this.filePath)) {
+        const content = fs.readFileSync(this.filePath, 'utf-8');
+        rawData = JSON.parse(content);
+      } else if (Array.isArray(bundledKnowledge)) {
+        // Fallback to statically bundled JSON for Serverless environments (Vercel)
+        rawData = bundledKnowledge;
+      } else {
         this.validationErrors.push(`Knowledge file not found at: ${this.filePath}`);
         this.entries = [];
         return { success: false, count: 0, errors: this.validationErrors };
       }
-
-      const content = fs.readFileSync(this.filePath, 'utf-8');
-      const rawData = JSON.parse(content);
 
       if (!Array.isArray(rawData)) {
         this.validationErrors.push('Knowledge file must contain a JSON array of entries.');

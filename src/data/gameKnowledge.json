@@ -1,7 +1,417 @@
 [
   {
+    "id": "giftcode_redemption_guide",
+    "category": "giftcodes_and_redemption",
+    "question": "Nhập giftcode Tam Quốc Tứ Thời Ca ở đâu?",
+    "alternativeQuestions": [
+      "Cách nhập code Tam Quốc Tứ Thời Ca?",
+      "Làm sao để đổi giftcode?",
+      "Nhập code ở trang nào?",
+      "Không biết nhập mã quà tặng ở đâu",
+      "Cách sử dụng giftcode SohaGame?",
+      "Nhập code ở đâu",
+      "Cách nhập mã quà tặng",
+      "Trang nhập code là gì?"
+    ],
+    "keywords": [
+      "nhập code",
+      "đổi code",
+      "nap sohagame",
+      "trang nhập code",
+      "cách nhập giftcode",
+      "hướng dẫn nhập code",
+      "sử dụng giftcode",
+      "nơi nhập code"
+    ],
+    "answer": "Để nhập và kích hoạt mã Giftcode game Tam Quốc Tứ Thời Ca, người chơi thực hiện theo các bước sau:\n\n1. Truy cập trang nạp và đổi quà chính thức của SohaGame tại: https://nap.sohagame.vn\n2. Đăng nhập vào tài khoản game của bạn.\n3. Chọn đúng máy chủ (Server) và nhân vật bạn đang chơi.\n4. Chọn mục **GiftCode** → chọn **Nhập Mã** → nhập chính xác mã quà tặng và nhấn **Sử Dụng**.\n\nSau khi đổi thành công, vật phẩm quà tặng sẽ được hệ thống gửi thẳng vào Hòm Thư nhân vật trong game.",
+    "source": "User-provided game support information",
+    "lastUpdated": "2026-10-16"
+  },
+  {
+    "id": "giftcode_full_list",
+    "category": "giftcodes_and_redemption",
+    "question": "Danh sách giftcode Tam Quốc Tứ Thời Ca hiện tại gồm những mã nào?",
+    "alternativeQuestions": [
+      "Cho tôi xin toàn bộ giftcode",
+      "Cho tôi toàn bộ code",
+      "Code game hiện tại là gì?",
+      "Có code Tam Quốc Tứ Thời Ca không?",
+      "Danh sách mã quà tặng",
+      "Code tân thủ",
+      "Giftcode mới",
+      "Có những code nào?",
+      "Tổng hợp code game",
+      "Xin code",
+      "Code mới nhất",
+      "Cho tôi tất cả code"
+    ],
+    "keywords": [
+      "toàn bộ code",
+      "danh sách code",
+      "tổng hợp code",
+      "giftcode",
+      "mã quà tặng",
+      "code tân thủ",
+      "code vip",
+      "code game",
+      "tất cả code"
+    ],
+    "answer": "Dưới đây là các mã code được cung cấp trong kho dữ liệu của Tam Quốc Tứ Thời Ca:\n\n- `TONTHUONGHUONG888`\n- `HANGVU888`\n- `HANHIVAR`\n- `NGANVAR`\n- `THAIVUVAR`\n- `TUTHOICA666`\n- `TAMQUOC888`\n- `HANGA999`\n- `VARXUYENTHOIDAI`\n- `DANHTUONGA`\n- `FREE1000QUAY`\n- `FREESSR999`\n- `FREEVIP10`\n- `VIP666`\n- `VIP777`\n- `VIP888`\n- `VIP999`\n- `THAYCONGPHAP`\n- `DOICHATTUONG`\n- `TEAMHANGA`\n- `QUAYLAHANGA`\n- `VARLANGONLUON`\n- `VARDISOGI`\n- `METAKHONGLOI`\n- `QUANVU888`\n- `TRIEUVAN999`\n- `LUBO999`\n- `MUNGQUOCKHANH`\n\n*Lưu ý quan trọng:* Các mã trên được ghi nhận từ dữ liệu hỗ trợ game. Tính khả dụng và hạn sử dụng của từng mã phụ thuộc vào thời hạn sự kiện, điều kiện tài khoản, máy chủ hoặc giới hạn số lượt kích hoạt. Để đổi thưởng, bạn truy cập trang https://nap.sohagame.vn, đăng nhập, chọn server/nhân vật, vào mục GiftCode → Nhập Mã → Sử Dụng.",
+    "source": "User-provided game support information",
+    "lastUpdated": "2026-10-16"
+  },
+  {
+    "id": "giftcode_delayed_delivery",
+    "category": "technical_support",
+    "question": "Đã nhập hoặc đăng ký giftcode nhưng chưa nhận được quà thì phải làm sao?",
+    "alternativeQuestions": [
+      "Vì sao chưa nhận được code?",
+      "Đăng ký code rồi mà chưa thấy gửi",
+      "Code về chậm phải làm sao?",
+      "Chờ bao lâu thì nhận được giftcode?",
+      "Tôi chưa nhận được code",
+      "Chưa thấy quà code trong hòm thư",
+      "Code bị chậm"
+    ],
+    "keywords": [
+      "chưa nhận được code",
+      "code về chậm",
+      "chờ code",
+      "quà chưa gửi",
+      "chậm phát code",
+      "thời gian nhận code"
+    ],
+    "answer": "Nếu bạn đã nhập hoặc đăng ký nhận giftcode nhưng chưa thấy quà gửi về game:\n\n- Vui lòng chờ từ **30 phút đến 2 giờ** để hệ thống tự động phân phối quà vào Hòm Thư trong game.\n- Nếu sau thời gian trên quà vẫn chưa xuất hiện, bạn hãy kiểm tra lại điều kiện tham gia của tài khoản và liên hệ bộ phận hỗ trợ chính thức của SohaGame để được kiểm tra chi tiết.",
+    "source": "User-provided game support information",
+    "lastUpdated": "2026-10-16"
+  },
+  {
+    "id": "giftcode_birthday",
+    "category": "events_and_rewards",
+    "question": "Điều kiện và cách nhận giftcode sinh nhật SohaGame là gì?",
+    "alternativeQuestions": [
+      "Điều kiện nhận code sinh nhật là gì?",
+      "Code sinh nhật SohaGame nhận thế nào?",
+      "Nạp bao nhiêu mới được code sinh nhật?",
+      "Quên cập nhật ngày sinh thì sao?",
+      "Code sinh nhật cần điều kiện gì?",
+      "Làm sao để nhận quà sinh nhật game?",
+      "Code sinh nhật"
+    ],
+    "keywords": [
+      "code sinh nhật",
+      "quà sinh nhật",
+      "điều kiện sinh nhật",
+      "nạp 1 triệu",
+      "ngày sinh sohagame",
+      "sinh nhat"
+    ],
+    "answer": "Điều kiện và các bước nhận Giftcode sinh nhật SohaGame:\n\n1. **Điều kiện chi tiêu:** Tài khoản phải có tổng tích lũy nạp đạt trên **1.000.000 VNĐ** tính chung trên tất cả các tựa game của SohaGame.\n2. **Cập nhật ngày sinh:** Người chơi cần truy cập trang https://taikhoan.sohagame.vn và hoàn thiện hồ sơ cá nhân (bao gồm ngày tháng năm sinh) **trước** ngày sinh nhật của mình.\n3. **Thời gian phát thưởng:** Quà sinh nhật sẽ được gửi vào đúng ngày sinh nhật của người chơi.",
+    "source": "User-provided game support information",
+    "lastUpdated": "2026-10-16"
+  },
+  {
+    "id": "giftcode_preregistration_store",
+    "category": "events_and_rewards",
+    "question": "Giftcode đăng ký trước trên Store áp dụng cho những tài khoản nào?",
+    "alternativeQuestions": [
+      "Code đăng ký trước dùng cho tài khoản nào?",
+      "Vì sao tôi không nhận được code đk store?",
+      "Tài khoản đăng ký sau 11/9 có dùng được code không?",
+      "Điều kiện nhận code đăng ký trước Store",
+      "Code store 11/9"
+    ],
+    "keywords": [
+      "đăng ký trước",
+      "store code",
+      "11/9",
+      "tài khoản trước 11/9",
+      "đk store",
+      "code mở sớm"
+    ],
+    "answer": "Giftcode đăng ký trước trên Store chỉ áp dụng cho các tài khoản được tạo/đăng ký **trước ngày 11/9**. Các tài khoản đăng ký sau mốc thời gian này sẽ không đủ điều kiện sử dụng mã. (Dữ liệu không nêu rõ năm cụ thể; nếu cần xác thực tính hợp lệ theo năm, bạn vui lòng đối chiếu thông báo sự kiện gốc hoặc liên hệ hỗ trợ chính thức).",
+    "source": "User-provided game support information",
+    "lastUpdated": "2026-10-16"
+  },
+  {
+    "id": "event_1000_draws",
+    "category": "events_and_rewards",
+    "question": "Quy tắc và phần thưởng sự kiện 1000 lượt rút chiêu mộ hoạt động như thế nào?",
+    "alternativeQuestions": [
+      "Sự kiện 1000 lượt rút nhận được bao nhiêu tướng?",
+      "Lưu được mấy tướng?",
+      "Có nhận được cả 4 tướng không?",
+      "Gói làm mới dùng để làm gì?",
+      "Mua gói làm mới có được thêm lượt chiêu mộ không?",
+      "Khi nào sự kiện 1000 lượt rút biến mất?",
+      "Quy tắc 1000 lượt quay",
+      "1000 lượt rút"
+    ],
+    "keywords": [
+      "1000 lượt rút",
+      "1000 quay",
+      "lưu 4 tướng",
+      "nhận 1 tướng",
+      "gói làm mới",
+      "biến mất sau 30 ngày"
+    ],
+    "answer": "Quy tắc tham gia sự kiện 1.000 lượt rút chiêu mộ tướng:\n\n1. **Số lượng lưu:** Trong quá trình chiêu mộ, người chơi có thể lưu lại tối đa **4 tướng** mong muốn.\n2. **Lượt nhận miễn phí:** Người chơi chỉ được nhận miễn phí duy nhất **1 tướng** trong số các tướng đã lưu (không được nhận cùng lúc cả 4 tướng).\n3. **Gói Làm Mới:** Nếu muốn nhận thêm 1 tướng nữa đã lưu, người chơi phải mua Gói Làm Mới. Gói này chỉ làm mới số lượt nhận tướng, **không làm mới các lượt rút chiêu mộ còn lại**.\n4. **Thời hạn sự kiện:** Sau khi người chơi nhận tối đa 2 tướng (1 miễn phí và 1 qua Gói Làm Mới), sự kiện sẽ kết thúc và biến mất. Nếu người chơi không mua gói làm mới, sự kiện sẽ tự động biến mất sau **30 ngày**.",
+    "source": "User-provided game support information",
+    "lastUpdated": "2026-10-16"
+  },
+  {
+    "id": "event_recruitment_leaderboards",
+    "category": "events_and_rewards",
+    "question": "Các sự kiện đua TOP chiêu mộ có mở lại không?",
+    "alternativeQuestions": [
+      "Đua TOP chiêu mộ có quay lại không?",
+      "Sự kiện đua TOP tướng diễn ra mấy lần?",
+      "Đua TOP công pháp có mở lại không?",
+      "Đua top phe có mở lại không?"
+    ],
+    "keywords": [
+      "đua top chiêu mộ",
+      "đua top tướng",
+      "đua top phe",
+      "đua top công pháp",
+      "quay lại",
+      "diễn ra mấy lần",
+      "mở lại"
+    ],
+    "answer": "Các sự kiện bảng xếp hạng như đua TOP chiêu mộ tướng, đua TOP chiêu mộ phe và đua TOP chiêu mộ công pháp chỉ diễn ra **duy nhất 1 lần** và **không quay trở lại**. Quy tắc này áp dụng cụ thể cho các chuỗi sự kiện đua top chiêu mộ kể trên.",
+    "source": "User-provided game support information",
+    "lastUpdated": "2026-10-16"
+  },
+  {
+    "id": "event_5star_review",
+    "category": "events_and_rewards",
+    "question": "Cách tham gia và nhận thưởng sự kiện đánh giá (Vote) App 5 sao?",
+    "alternativeQuestions": [
+      "Vote 5 sao nhận quà thế nào?",
+      "Gửi ảnh đánh giá ở đâu?",
+      "Khi nào nhận được quà vote app?",
+      "Đánh giá 5 sao nhận quà gì?"
+    ],
+    "keywords": [
+      "vote 5 sao",
+      "đánh giá 5 sao",
+      "quà vote app",
+      "quà tặng của tôi",
+      "ảnh đánh giá"
+    ],
+    "answer": "Quy trình nhận thưởng sự kiện đánh giá App 5 sao:\n\n1. Người chơi chụp ảnh màn hình bài đánh giá 5 sao, yêu cầu ảnh phải thấy rõ ràng phần nội dung đánh giá và logo game Tam Quốc Tứ Thời Ca.\n2. Phần thưởng sự kiện sẽ được hệ thống phân phối trong ngày vào mục **'Quà tặng của tôi'** trên trang nạp SohaGame.",
+    "source": "User-provided game support information",
+    "lastUpdated": "2026-10-16"
+  },
+  {
+    "id": "event_group_checkin",
+    "category": "events_and_rewards",
+    "question": "Khi nào có kết quả và phát quà sự kiện báo danh Group?",
+    "alternativeQuestions": [
+      "Báo danh group khi nào có kết quả?",
+      "Kết quả sự kiện group xem ở đâu?",
+      "Khi nào phát quà báo danh?",
+      "Báo danh nhóm nhận quà khi nào?"
+    ],
+    "keywords": [
+      "báo danh group",
+      "kết quả group",
+      "phát quà báo danh",
+      "fanpage",
+      "khi nào có kết quả"
+    ],
+    "answer": "Đối với sự kiện báo danh Group, người chơi cần kiên nhẫn đợi cho đến khi thời gian sự kiện kết thúc hoàn toàn. Ban tổ chức sẽ tổng hợp và công bố kết quả cùng danh sách nhận thưởng trên Fanpage chính thức của game.",
+    "source": "User-provided game support information",
+    "lastUpdated": "2026-10-16"
+  },
+  {
+    "id": "event_vip_milestones",
+    "category": "events_and_rewards",
+    "question": "Cần cung cấp những thông tin gì để yêu cầu nhận quà mốc VIP?",
+    "alternativeQuestions": [
+      "Cách nhận quà VIP?",
+      "Đạt VIP rồi nhận quà ở đâu?",
+      "Cần cung cấp thông tin gì để nhận quà VIP?",
+      "Thông tin nhận mốc VIP"
+    ],
+    "keywords": [
+      "quà vip",
+      "mốc vip",
+      "thông tin nhận vip",
+      "nhận quà vip",
+      "đạt vip"
+    ],
+    "answer": "Để yêu cầu nhận phần thưởng mốc VIP đạt được, người chơi cần cung cấp các thông tin sau dưới dạng văn bản (text):\n\n1. Số điện thoại hoặc email đăng nhập tài khoản.\n2. Tên nhân vật trong game.\n3. ID nhân vật trong game.\n4. Tên máy chủ (Server).\n5. Ảnh chụp màn hình hiển thị mốc VIP đã đạt được trong game.\n\n*Lưu ý bảo mật:* Tuyệt đối không gửi mật khẩu, mã OTP hoặc thông tin bảo mật đăng nhập cho bất kỳ ai.",
+    "source": "User-provided game support information",
+    "lastUpdated": "2026-10-16"
+  },
+  {
+    "id": "tech_support_bug_reporting",
+    "category": "technical_support",
+    "question": "Khi báo lỗi game cho bộ phận kỹ thuật cần cung cấp những thông tin gì?",
+    "alternativeQuestions": [
+      "Báo lỗi game cần thông tin gì?",
+      "Game bị lỗi thì báo ở đâu?",
+      "Kỹ thuật yêu cầu ID nào?",
+      "Lỗi game cần gửi ảnh hay thông tin gì?",
+      "Cách báo lỗi game"
+    ],
+    "keywords": [
+      "báo lỗi",
+      "lỗi game",
+      "hỗ trợ kỹ thuật",
+      "thông tin báo lỗi",
+      "id nhân vật",
+      "server"
+    ],
+    "answer": "Khi phát hiện sự cố và cần báo lỗi cho bộ phận hỗ trợ kỹ thuật, người chơi cần cung cấp các thông tin sau dưới dạng văn bản gõ tay:\n\n1. **ID trên trang nạp** của tài khoản.\n2. **Tên nhân vật** trong game.\n3. **ID nhân vật ingame** (nhấn vào avatar nhân vật trong game để xem và sao chép).\n4. **Tên máy chủ (Server)** đang xảy ra lỗi.\n\nViệc gửi đầy đủ các thông tin trên sẽ giúp kỹ thuật viên định danh dữ liệu và khắc phục sự cố nhanh chóng nhất.",
+    "source": "User-provided game support information",
+    "lastUpdated": "2026-10-16"
+  },
+  {
+    "id": "tech_code_de_restriction",
+    "category": "technical_support",
+    "question": "Quy tắc và giới hạn sử dụng Cổ Đế trong ải như thế nào?",
+    "alternativeQuestions": [
+      "Lỗi Cổ Đế không dùng được",
+      "Tại sao Cổ Đế không dùng được ở chương 1.2?",
+      "Dùng Cổ Đế ở 1.1 rồi có dùng được 1.2 không?",
+      "Cổ Đế dùng ở 1.1 rồi có dùng ở 1.2 được không?",
+      "Quy tắc sử dụng Cổ Đế là gì?",
+      "Giới hạn dùng cổ đế"
+    ],
+    "keywords": [
+      "cổ đế",
+      "quy tắc cổ đế",
+      "chương 1.1",
+      "chương 1.2",
+      "không dùng được cổ đế",
+      "hạn chế cổ đế"
+    ],
+    "answer": "Quy tắc sử dụng Cổ Đế trong ải:\n\n- Mỗi ải Cổ Đế bao gồm 2 chương (chương x.1 và chương x.2).\n- Nếu bạn đã sử dụng Cổ Đế ở chương x.1 thì **không thể tiếp tục sử dụng ở chương x.2** trong cùng ải đó.\n- Ví dụ: Dùng Cổ Đế ở chương 1.1 thì sang 1.2 sẽ không thể kích hoạt. Nhưng khi sang ải tiếp theo (ải 2), bạn có thể sử dụng lại ở chương 2.1, và sau đó hạn chế này lại tiếp tục áp dụng cho chương 2.2.",
+    "source": "User-provided game support information",
+    "lastUpdated": "2026-10-16"
+  },
+  {
+    "id": "tech_pc_emulator_guide",
+    "category": "technical_support",
+    "question": "Có thể chơi Tam Quốc Tứ Thời Ca trên máy tính (PC) bằng giả lập không?",
+    "alternativeQuestions": [
+      "Chơi Tam Quốc Tứ Thời Ca trên PC thế nào?",
+      "Game có chơi được trên giả lập không?",
+      "Nên dùng giả lập nào?",
+      "MuMu Player có chơi được game không?",
+      "Cách chơi game trên máy tính",
+      "Cài đặt pc"
+    ],
+    "keywords": [
+      "giả lập",
+      "máy tính",
+      "chơi trên pc",
+      "mumu player",
+      "android 13",
+      "cài trên pc"
+    ],
+    "answer": "Bạn hoàn toàn có thể chơi Tam Quốc Tứ Thời Ca trên máy tính (PC) bằng phần mềm giả lập theo khuyến nghị từ bộ phận hỗ trợ:\n\n- Khuyến nghị sử dụng phiên bản hệ điều hành Android từ **13 trở lên**.\n- Trình giả lập đề xuất hoạt động ổn định là **MuMu Player**.\n- Sau khi mở giả lập, bạn vào ứng dụng Google Play Store, tìm kiếm 'Tam Quốc Tứ Thời Ca' và tiến hành cài đặt để trải nghiệm.",
+    "source": "User-provided game support information",
+    "lastUpdated": "2026-10-16"
+  },
+  {
+    "id": "payment_general_guide",
+    "category": "payments_and_account_security",
+    "question": "Trang nạp tiền chính thức của game là gì và nạp như thế nào?",
+    "alternativeQuestions": [
+      "Nạp game ở đâu?",
+      "Hướng dẫn nạp tiền",
+      "Trang nạp SohaGame là gì?",
+      "Xem khuyến mãi nạp tiền ở đâu?",
+      "Cách nạp tiền vào game",
+      "Kênh nạp chính thức",
+      "Nạp thẻ"
+    ],
+    "keywords": [
+      "nạp tiền",
+      "nạp game",
+      "trang nạp sohagame",
+      "sohagame vn",
+      "kênh nạp tiền",
+      "nap tien"
+    ],
+    "answer": "Kênh nạp thẻ và giao dịch chính thức của game là: https://sohagame.vn\n\nNgười chơi vui lòng truy cập địa chỉ trên, đăng nhập tài khoản và chọn nhân vật để xem danh sách các phương thức thanh toán được hỗ trợ cũng như các chương trình ưu đãi, khuyến mãi nạp đang áp dụng.",
+    "source": "User-provided game support information",
+    "lastUpdated": "2026-10-16"
+  },
+  {
+    "id": "payment_bank_transfer",
+    "category": "payments_and_account_security",
+    "question": "Cách nạp SohaCoin bằng hình thức chuyển khoản trực tiếp qua ngân hàng?",
+    "alternativeQuestions": [
+      "Cách nạp SohaCoin bằng chuyển khoản?",
+      "Chuyển khoản nạp game như thế nào?",
+      "Lấy số tài khoản nạp tiền ở đâu?",
+      "Có hỗ trợ ngân hàng của tôi không?",
+      "Nạp qua tài khoản ngân hàng",
+      "Chuyển khoản nạp tiền"
+    ],
+    "keywords": [
+      "nạp chuyển khoản",
+      "chuyển khoản trực tiếp",
+      "nạp sohacoin",
+      "số tài khoản nạp",
+      "ngân hàng",
+      "chuyen khoan"
+    ],
+    "answer": "Các bước nạp SohaCoin bằng hình thức chuyển khoản ngân hàng:\n\n1. Truy cập trang nạp https://sohagame.vn, đăng nhập tài khoản, chọn đúng nhân vật và máy chủ (Server).\n2. Chọn mục **'Nạp sohacoin'** → chọn hình thức **'Chuyển khoản trực tiếp'**.\n3. Bấm vào biểu tượng ngân hàng để nhận **Số tài khoản đích được liên kết với ID cá nhân** của bạn.\n4. Mở ứng dụng ngân hàng và tiến hành chuyển khoản tới số tài khoản đích đó. Hình thức này hỗ trợ tất cả các ngân hàng tại Việt Nam.\n\n*Lưu ý quan trọng:* Luôn lấy số tài khoản đích hiển thị trực tiếp trên trang nạp cho mỗi giao dịch của bạn; không chuyển khoản vào số tài khoản do người khác nhắn tin riêng cung cấp.",
+    "source": "User-provided game support information",
+    "lastUpdated": "2026-10-16"
+  },
+  {
+    "id": "account_security_apple_guest",
+    "category": "payments_and_account_security",
+    "question": "Làm thế nào để liên kết và bảo vệ tài khoản chơi ngay (Guest), Apple, iCloud để không bị mất tài khoản?",
+    "alternativeQuestions": [
+      "Cách liên kết tài khoản Apple?",
+      "Chơi ngay có bị mất tài khoản không?",
+      "Cách bảo vệ tài khoản game?",
+      "Liên kết tài khoản iCloud như thế nào?",
+      "Đổi tài khoản đăng nhập game ở đâu?",
+      "Bảo vệ tài khoản chơi ngay"
+    ],
+    "keywords": [
+      "liên kết apple",
+      "liên kết icloud",
+      "bảo vệ tài khoản",
+      "chơi ngay",
+      "mất tài khoản",
+      "đổi id đăng nhập"
+    ],
+    "answer": "Để bảo vệ tài khoản chơi ngay hoặc liên kết tài khoản Apple/iCloud/TikTok/Facebook tránh bị mất quyền truy cập:\n\n**Cách 1:** Xem hướng dẫn liên kết chi tiết trực tiếp tại https://sohagame.vn.\n\n**Cách 2:**\n1. Đăng nhập vào game bằng tài khoản hiện tại (iCloud, TikTok hoặc Facebook).\n2. Đăng xuất khỏi game để hệ thống xuất hiện popup gợi ý liên kết tài khoản.\n3. Truy cập https://sohagame.vn và đăng nhập tài khoản đang chơi.\n4. Chọn mục **'Bảo vệ tài khoản'** (hoặc biểu tượng hoa sen ở góc trên bên phải màn hình).\n5. Chọn mục ID đăng nhập và đổi sang Số điện thoại hoặc Email **chưa từng được đăng ký** trên SohaGame.\n6. Đăng xuất và đăng nhập lại vào game bằng ID và mật khẩu mới cập nhật.\n\n*Lưu ý bảo mật:* Không chia sẻ mật khẩu hoặc mã OTP xác thực cho bất kỳ ai.",
+    "source": "User-provided game support information",
+    "lastUpdated": "2026-10-16"
+  },
+  {
+    "id": "account_security_change_phone_email",
+    "category": "payments_and_account_security",
+    "question": "Cách thay đổi số điện thoại bảo vệ hoặc email bảo mật của tài khoản?",
+    "alternativeQuestions": [
+      "Cách đổi số điện thoại bảo vệ?",
+      "Đổi email bảo mật SohaGame ở đâu?",
+      "Làm sao đổi số điện thoại tài khoản game?",
+      "Thay đổi thông tin bảo mật tài khoản"
+    ],
+    "keywords": [
+      "đổi sđt bảo vệ",
+      "đổi email bảo mật",
+      "thay số điện thoại",
+      "bảo mật tài khoản"
+    ],
+    "answer": "Để thay đổi số điện thoại bảo vệ hoặc email bảo mật cho tài khoản game, người chơi vui lòng truy cập trực tiếp trang quản lý tài khoản chính thức: https://sohagame.vn (hoặc https://taikhoan.sohagame.vn), vào phần cài đặt bảo vệ tài khoản để tiến hành đổi thông tin xác thực.",
+    "source": "User-provided game support information",
+    "lastUpdated": "2026-10-16"
+  },
+  {
     "id": "beginner_001",
-    "category": "team_formation",
+    "category": "gameplay_mechanics",
     "question": "Người mới nên xây dựng đội hình như thế nào?",
     "alternativeQuestions": [
       "Anh nên build đội hình nào cho người mới?",
@@ -10,7 +420,6 @@
       "Đội hình ban đầu gồm những ai?",
       "Cách xếp đội hình tân thủ hiệu quả"
     ],
-    "answer": "Đối với tân thủ mới gia nhập Tam Quốc Tứ Thời Ca, giai đoạn đầu nên ưu tiên xây dựng đội hình cân bằng theo công thức chuẩn: 1 Đỡ Đòn (Tiên Phong/Tanker) + 2 Sát Thương Chủ Lực (1 Sát thương Vật lý, 1 Sát thương Pháp thuật) + 1 Khống Chế + 1 Trợ Thủ/Hồi Máu.\n\n- Đỡ Đòn khởi đầu dễ kiếm: Trương Phi hoặc Tào Nhân (có khiên hộ thân vững chắc).\n- Sát Thương Chủ Lực: Triệu Vân (nhận từ điểm danh tuần, cơ động cao) kết hợp Điêu Thuyền hoặc Chân Cơ.\n- Khống Chế: Hoàng Nguyệt Anh hoặc Quách Gia.\n- Hồi Phục/Trợ Thủ: Thái Diễm hoặc Hoa Đà.\n\nĐội hình này giúp vượt ải Chiến Dịch nhanh chóng, tiết kiệm tối đa đan dược và tài nguyên chuyển đổi tướng sau này.",
     "keywords": [
       "tân thủ",
       "đội hình",
@@ -20,6 +429,7 @@
       "giai đoạn đầu",
       "xếp team"
     ],
+    "answer": "Đối với tân thủ mới gia nhập Tam Quốc Tứ Thời Ca, giai đoạn đầu nên ưu tiên xây dựng đội hình cân bằng theo công thức chuẩn: 1 Đỡ Đòn (Tiên Phong/Tanker) + 2 Sát Thương Chủ Lực (1 Sát thương Vật lý, 1 Sát thương Pháp thuật) + 1 Khống Chế + 1 Trợ Thủ/Hồi Máu.\n\n- Đỡ Đòn khởi đầu dễ kiếm: Trương Phi hoặc Tào Nhân (có khiên hộ thân vững chắc).\n- Sát Thương Chủ Lực: Triệu Vân (nhận từ điểm danh tuần, cơ động cao) kết hợp Điêu Thuyền hoặc Chân Cơ.\n- Khống Chế: Hoàng Nguyệt Anh hoặc Quách Gia.\n- Hồi Phục/Trợ Thủ: Thái Diễm hoặc Hoa Đà.\n\nĐội hình này giúp vượt ải Chiến Dịch nhanh chóng, tiết kiệm tối đa đan dược và tài nguyên chuyển đổi tướng sau này.",
     "source": "Sổ Tay Chiến Lược Tân Thủ v1.0",
     "lastUpdated": "2026-10-16"
   },
@@ -33,7 +443,6 @@
       "Hiệu ứng Xuân Hạ Thu Đông trong game",
       "Hệ thống tứ thời thay đổi chiến trường thế nào?"
     ],
-    "answer": "Cơ chế Tứ Thời là điểm đặc trưng độc nhất của Tam Quốc Tứ Thời Ca. Mỗi ải phụ bản, chiến trường hay mùa giải sẽ chuyển dịch qua 4 mùa với hiệu ứng đặc biệt tác động lên toàn trận:\n\n1. Mùa Xuân (Mộc Vượng): Tăng 15% hiệu quả hồi máu, gia tăng tốc độ tích lũy nộ khí cho tướng Trợ Thủ và hồi phục.\n2. Mùa Hạ (Hỏa Diễm): Tăng 20% sát thương bạo kích và bộc phá thêm sát thương thiêu đốt cho tướng Công hệ Vật lý/Hỏa.\n3. Mùa Thu (Kim Phong): Tăng hiệu lực khống chế (choáng, câm lặng) thêm 1.5 giây, đồng thời giảm 15% giáp toàn bộ phe địch.\n4. Mùa Đông (Hàn Băng): Tăng lớp giáp băng hấp thụ sát thương, đồng thời giảm 20% tốc độ xuất chiêu của đối thủ.\n\nKhi xếp đội hình có tối thiểu 3 tướng đồng hệ với mùa hiện tại, toàn đội sẽ kích hoạt 'Tứ Thời Trận Pháp' tăng thêm 12% chỉ số toàn diện.",
     "keywords": [
       "tứ thời",
       "bốn mùa",
@@ -46,12 +455,13 @@
       "mùa thu",
       "mùa đông"
     ],
+    "answer": "Cơ chế Tứ Thời là điểm đặc trưng độc nhất của Tam Quốc Tứ Thời Ca. Mỗi ải phụ bản, chiến trường hay mùa giải sẽ chuyển dịch qua 4 mùa với hiệu ứng đặc biệt tác động lên toàn trận:\n\n1. Mùa Xuân (Mộc Vượng): Tăng 15% hiệu quả hồi máu, gia tăng tốc độ tích lũy nộ khí cho tướng Trợ Thủ và hồi phục.\n2. Mùa Hạ (Hỏa Diễm): Tăng 20% sát thương bạo kích và bộc phá thêm sát thương thiêu đốt cho tướng Công hệ Vật lý/Hỏa.\n3. Mùa Thu (Kim Phong): Tăng hiệu lực khống chế (choáng, câm lặng) thêm 1.5 giây, đồng thời giảm 15% giáp toàn bộ phe địch.\n4. Mùa Đông (Hàn Băng): Tăng lớp giáp băng hấp thụ sát thương, đồng thời giảm 20% tốc độ xuất chiêu của đối thủ.\n\nKhi xếp đội hình có tối thiểu 3 tướng đồng hệ với mùa hiện tại, toàn đội sẽ kích hoạt 'Tứ Thời Trận Pháp' tăng thêm 12% chỉ số toàn diện.",
     "source": "Hệ Thống Trận Pháp Tứ Thời",
     "lastUpdated": "2026-10-16"
   },
   {
     "id": "currency_001",
-    "category": "resources",
+    "category": "gameplay_mechanics",
     "question": "Cách kiếm Kim Nguyên Bảo (KNB) miễn phí và hiệu quả nhất?",
     "alternativeQuestions": [
       "Làm sao để cày KNB nhanh?",
@@ -60,7 +470,6 @@
       "Cách kiếm knb miễn phí",
       "Dân cày kiếm knb như thế nào?"
     ],
-    "answer": "Để tích lũy Kim Nguyên Bảo (KNB) mỗi ngày dồi dào mà không cần nạp thẻ:\n\n1. Hoàn thành trọn vẹn Nhiệm Vụ Hằng Ngày: Đạt mốc 100 điểm năng động nhận ngay 300 KNB kèm vé quay tướng.\n2. Đấu Trường Diễn Võ: Leo hạng đấu trường để nhận KNB kỷ lục lần đầu, đồng thời duy trì top để nhận thưởng kết toán mỗi ngày vào lúc 21:00.\n3. Vượt Tháp Thiên Tầng & Ải Tinh Anh: Mỗi tầng mốc (tầng 5, 10, 15...) thưởng từ 150 - 500 KNB.\n4. Tiệc Rượu Quân Đoàn & Lì Xì Bang: Tham gia đủ các khung giờ tiệc bang để nhặt lì xì KNB rơi tự do từ đồng đội.\n5. Chuỗi Thành Tựu Thao Lược: Hoàn thành các điều kiện chiến tích trong Tam Quốc Chí để nhận hàng ngàn KNB tích lũy.",
     "keywords": [
       "kim nguyên bảo",
       "knb",
@@ -71,12 +480,13 @@
       "farm vàng",
       "kiếm tiền"
     ],
+    "answer": "Để tích lũy Kim Nguyên Bảo (KNB) mỗi ngày dồi dào mà không cần nạp thẻ:\n\n1. Hoàn thành trọn vẹn Nhiệm Vụ Hằng Ngày: Đạt mốc 100 điểm năng động nhận ngay 300 KNB kèm vé quay tướng.\n2. Đấu Trường Diễn Võ: Leo hạng đấu trường để nhận KNB kỷ lục lần đầu, đồng thời duy trì top để nhận thưởng kết toán mỗi ngày vào lúc 21:00.\n3. Vượt Tháp Thiên Tầng & Ải Tinh Anh: Mỗi tầng mốc (tầng 5, 10, 15...) thưởng từ 150 - 500 KNB.\n4. Tiệc Rượu Quân Đoàn & Lì Xì Bang: Tham gia đủ các khung giờ tiệc bang để nhặt lì xì KNB rơi tự do từ đồng đội.\n5. Chuỗi Thành Tựu Thao Lược: Hoàn thành các điều kiện chiến tích trong Tam Quốc Chí để nhận hàng ngàn KNB tích lũy.",
     "source": "Hướng Dẫn Tài Nguyên & Kinh Tế",
     "lastUpdated": "2026-10-16"
   },
   {
     "id": "heroes_001",
-    "category": "heroes",
+    "category": "gameplay_mechanics",
     "question": "Những tướng nào mạnh nhất đáng nuôi trong giai đoạn đầu và giữa game?",
     "alternativeQuestions": [
       "Tướng nào gánh team tốt nhất?",
@@ -85,7 +495,6 @@
       "Tướng SSR nào nên dồn tài nguyên?",
       "Võ tướng nào mạnh nhất?"
     ],
-    "answer": "Các vị tướng xuất sắc, tỉ lệ gánh đội cực cao và dễ nuôi trong giai đoạn đầu - giữa game gồm:\n\n1. Triệu Vân (Thục - Đấu Sĩ/Cơ Động): Kỹ năng 'Long Đảm Xuất Kích' miễn khống chế và càn quét hàng sau, được tặng miễn phí quà 7 ngày đăng nhập.\n2. Chu Du (Ngô - Pháp Sư Hỏa Thiêu): Sát thương diện rộng bao phủ cả bản đồ, sát thương duy trì cực kỳ khủng khiếp đặc biệt trong Mùa Hạ.\n3. Quách Gia (Ngụy - Khống Chế Tuyệt Đỉnh): Sở hữu khả năng đóng băng và khóa nộ khí đối thủ, giúp khống chế cục diện trận đấu.\n4. Hoa Đà (Quần - Thần Y): Cứu nguy đồng đội với kỹ năng hồi phục toàn thể và xóa toàn bộ hiệu ứng xấu/trúng độc, là trợ thủ quốc dân không bao giờ lỗi thời.",
     "keywords": [
       "tướng mạnh",
       "nuôi tướng",
@@ -98,36 +507,13 @@
       "hoa đà",
       "tướng khởi đầu"
     ],
+    "answer": "Các vị tướng xuất sắc, tỉ lệ gánh đội cực cao và dễ nuôi trong giai đoạn đầu - giữa game gồm:\n\n1. Triệu Vân (Thục - Đấu Sĩ/Cơ Động): Kỹ năng 'Long Đảm Xuất Kích' miễn khống chế và càn quét hàng sau, được tặng miễn phí quà 7 ngày đăng nhập.\n2. Chu Du (Ngô - Pháp Sư Hỏa Thiêu): Sát thương diện rộng bao phủ cả bản đồ, sát thương duy trì cực kỳ khủng khiếp đặc biệt trong Mùa Hạ.\n3. Quách Gia (Ngụy - Khống Chế Tuyệt Đỉnh): Sở hữu khả năng đóng băng và khóa nộ khí đối thủ, giúp khống chế cục diện trận đấu.\n4. Hoa Đà (Quần - Thần Y): Cứu nguy đồng đội với kỹ năng hồi phục toàn thể và xóa toàn bộ hiệu ứng xấu/trúng độc, là trợ thủ quốc dân không bao giờ lỗi thời.",
     "source": "Bảng Xếp Hạng Võ Tướng v1.2",
     "lastUpdated": "2026-10-16"
   },
   {
-    "id": "giftcode_001",
-    "category": "giftcode",
-    "question": "Cách nhập Giftcode và các mã tân thủ mới nhất của game?",
-    "alternativeQuestions": [
-      "Nhập code ở đâu?",
-      "Có mã giftcode nào không?",
-      "Xin code tân thủ",
-      "Cách đổi mã quà tặng trong game",
-      "Mã code mới nhất là gì?"
-    ],
-    "answer": "Các bước nhập mã quà tặng (Giftcode):\n\n1. Tại giao diện thành chính, nhấn vào biểu tượng Ảnh Đại Diện (Avatar) của nhân vật ở góc trên cùng bên trái.\n2. Chọn tab 'Cài Đặt Hệ Thống' -> nhấn chọn nút 'Đổi Giftcode'.\n3. Nhập chính xác các ký tự mã code (chú ý chữ hoa/thường) rồi bấm 'Nhận Thưởng'.\n4. Mở hòm Thư ingame để nhận vật phẩm gửi về.\n\n*Danh sách mã tân thủ thông dụng:* `TAMQUOC2026`, `TUTHOICA999`, `NGANNHIVIP`, `TANTHU68` (Lưu ý: mỗi mã có thời hạn và dùng 1 lần cho 1 nhân vật).",
-    "keywords": [
-      "giftcode",
-      "code",
-      "mã quà tặng",
-      "nhập code",
-      "code tân thủ",
-      "quà",
-      "đổi quà"
-    ],
-    "source": "Thông Cáo Sự Kiện & Quà Tặng Tân Thủ",
-    "lastUpdated": "2026-10-16"
-  },
-  {
     "id": "guild_001",
-    "category": "guild_clan",
+    "category": "gameplay_mechanics",
     "question": "Tham gia Bang Hội (Quân Đoàn) mang lại những lợi ích gì?",
     "alternativeQuestions": [
       "Có nên vào bang sớm không?",
@@ -136,7 +522,6 @@
       "Tác dụng của quân đoàn",
       "Vào bang nhận được gì?"
     ],
-    "answer": "Gia nhập Quân Đoàn càng sớm sẽ giúp tăng lực chiến vượt bậc nhờ 4 quyền lợi độc quyền:\n\n1. Viện Khoa Kỹ Quân Đoàn: Tăng vĩnh viễn % chỉ số Công, Thủ, Máu và Bạo Kích cho toàn bộ đội hình xuất trận.\n2. Cửa Hàng Quân Đoàn: Dùng điểm Cống Hiến nhận được từ điểm danh bang để đổi Mảnh Thần Tướng và Đá Tẩy Luyện Thần Binh cao cấp.\n3. Khiêu Chiến Thần Thú Bang: Đánh boss liên quân hằng ngày nhận Rương Chiến Tướng và KNB chia cổ tức.\n4. Quân Đoàn Chiến Tranh Bá: Chiếm đóng châu quận để nhận bổng lộc hàng tuần và phong hiệu uy danh.",
     "keywords": [
       "bang hội",
       "quân đoàn",
@@ -146,12 +531,13 @@
       "lợi ích",
       "cống hiến bang"
     ],
+    "answer": "Gia nhập Quân Đoàn càng sớm sẽ giúp tăng lực chiến vượt bậc nhờ 4 quyền lợi độc quyền:\n\n1. Viện Khoa Kỹ Quân Đoàn: Tăng vĩnh viễn % chỉ số Công, Thủ, Máu và Bạo Kích cho toàn bộ đội hình xuất trận.\n2. Cửa Hàng Quân Đoàn: Dùng điểm Cống Hiến nhận được từ điểm danh bang để đổi Mảnh Thần Tướng và Đá Tẩy Luyện Thần Binh cao cấp.\n3. Khiêu Chiến Thần Thú Bang: Đánh boss liên quân hằng ngày nhận Rương Chiến Tướng và KNB chia cổ tức.\n4. Quân Đoàn Chiến Tranh Bá: Chiếm đóng châu quận để nhận bổng lộc hàng tuần và phong hiệu uy danh.",
     "source": "Sổ Tay Quân Đoàn Ca",
     "lastUpdated": "2026-10-16"
   },
   {
     "id": "equipment_001",
-    "category": "equipment_forge",
+    "category": "gameplay_mechanics",
     "question": "Làm thế nào để nâng cấp và rèn Thần Binh trang bị hiệu quả?",
     "alternativeQuestions": [
       "Cách nâng cấp đồ và thần binh",
@@ -160,7 +546,6 @@
       "Nâng sao trang bị",
       "Cường hóa trang bị hiệu quả"
     ],
-    "answer": "Bí quyết rèn đúc và tối ưu trang bị trong Tam Quốc Tứ Thời Ca:\n\n1. Kích hoạt Cộng Hưởng Cường Hóa: Hãy cường hóa 4 món trang bị (Vũ Khí, Mão, Giáp, Giày) đồng đều theo các mốc cấp độ (10, 20, 30...) để mở khóa chỉ số cộng hưởng toàn thân.\n2. Tẩy Luyện Đúng Thuộc Tính: Ưu tiên dòng thuộc tính phù hợp theo vai trò (Tướng Công: Bạo kích, Xuyên giáp, Sát thương %; Tướng Thủ: Né tránh, Miễn thương, Kháng bạo).\n3. Thần Binh Trấn Phái: Chỉ kích hoạt và dồn Đá Thần Binh cho Thần Binh bản mệnh của tướng chủ lực để mở khóa kỹ năng thức tỉnh độc quyền (ví dụ Phương Thiên Họa Kích cho Lữ Bố, Thanh Long Đao cho Quan Vũ).",
     "keywords": [
       "thần binh",
       "trang bị",
@@ -171,6 +556,7 @@
       "cộng hưởng",
       "vũ khí"
     ],
+    "answer": "Bí quyết rèn đúc và tối ưu trang bị trong Tam Quốc Tứ Thời Ca:\n\n1. Kích hoạt Cộng Hưởng Cường Hóa: Hãy cường hóa 4 món trang bị (Vũ Khí, Mão, Giáp, Giày) đồng đều theo các mốc cấp độ (10, 20, 30...) để mở khóa chỉ số cộng hưởng toàn thân.\n2. Tẩy Luyện Đúng Thuộc Tính: Ưu tiên dòng thuộc tính phù hợp theo vai trò (Tướng Công: Bạo kích, Xuyên giáp, Sát thương %; Tướng Thủ: Né tránh, Miễn thương, Kháng bạo).\n3. Thần Binh Trấn Phái: Chỉ kích hoạt và dồn Đá Thần Binh cho Thần Binh bản mệnh của tướng chủ lực để mở khóa kỹ năng thức tỉnh độc quyền (ví dụ Phương Thiên Họa Kích cho Lữ Bố, Thanh Long Đao cho Quan Vũ).",
     "source": "Cẩm Nang Thần Binh Các",
     "lastUpdated": "2026-10-16"
   }

@@ -1,6 +1,7 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import crypto from 'node:crypto';
 import dotenv from 'dotenv';
+import { NGAN_NHI_MIGRATION_SQL } from './migrationSql.js';
 
 dotenv.config();
 
@@ -21,9 +22,12 @@ export interface SupabaseStatus {
   keyConfigured: boolean;
   message: string;
   mode: 'supabase' | 'in_memory_fallback';
+  statusType: 'connected' | 'tables_pending_migration' | 'credentials_missing' | 'connection_error';
+  migrationSql?: string;
+  projectRef?: string;
 }
 
-// In-memory fallback structures for when Supabase is not configured or temporarily unreachable
+// In-memory fallback structures for when Supabase is not configured or awaiting table migration
 interface InMemorySession {
   id: string;
   sessionTokenHash: string;
@@ -53,7 +57,11 @@ class DatabaseService {
   private client: SupabaseClient | null = null;
   private isConfigured: boolean = false;
   private isConnected: boolean = false;
+  private statusType: 'connected' | 'tables_pending_migration' | 'credentials_missing' | 'connection_error' = 'credentials_missing';
   private connectionError: string | null = null;
+  private lastCheckTime: number = 0;
+  private isChecking: boolean = false;
+  private projectRef: string = '';
 
   // In-memory fallback caches
   private memorySessions: Map<string, InMemorySession> = new Map();
@@ -71,6 +79,12 @@ class DatabaseService {
 
     if (supabaseUrl && supabaseKey && !supabaseUrl.includes('your-project-ref')) {
       try {
+        // Extract project ref from URL if possible (e.g. https://xyz.supabase.co)
+        const match = supabaseUrl.match(/https:\/\/([a-z0-9_-]+)\.supabase\.co/i);
+        if (match) {
+          this.projectRef = match[1];
+        }
+
         this.client = createClient(supabaseUrl, supabaseKey, {
           auth: {
             persistSession: false,
@@ -79,60 +93,96 @@ class DatabaseService {
         });
         this.isConfigured = true;
         // Verify connectivity asynchronously
-        this.testConnection();
+        this.testConnection(true);
       } catch (err) {
         this.isConfigured = false;
+        this.statusType = 'connection_error';
         this.connectionError = err instanceof Error ? err.message : String(err);
-        console.warn('[Supabase] Failed to initialize client:', this.connectionError);
       }
     } else {
       this.isConfigured = false;
-      this.connectionError = 'SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY not configured in environment.';
-      console.log('[Supabase] Running in local in-memory persistence mode (Supabase credentials not yet configured).');
+      this.statusType = 'credentials_missing';
+      this.connectionError = 'SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY not configured.';
     }
   }
 
-  public async testConnection(): Promise<boolean> {
+  public async testConnection(forceRecheck = false): Promise<boolean> {
     if (!this.client || !this.isConfigured) {
       this.isConnected = false;
+      this.statusType = 'credentials_missing';
       return false;
     }
+
+    // Cooldown check: avoid hammering Supabase on rapid sequential calls
+    const now = Date.now();
+    if (!forceRecheck && now - this.lastCheckTime < 15000) {
+      return this.isConnected;
+    }
+
+    if (this.isChecking) {
+      return this.isConnected;
+    }
+
+    this.isChecking = true;
+    this.lastCheckTime = now;
+
     try {
       // Test read from chat_sessions limit 1
       const { error } = await this.client.from('chat_sessions').select('id').limit(1);
+
       if (error) {
-        // Table may not exist yet or permissions issue
+        if (error.code === 'PGRST205' || error.message?.includes('schema cache') || error.message?.includes('Could not find the table')) {
+          this.isConnected = false;
+          this.statusType = 'tables_pending_migration';
+          this.connectionError = 'Bảng public.chat_sessions chưa được tạo trong Supabase. Cần chạy SQL Migration.';
+          return false;
+        }
+
         this.isConnected = false;
-        this.connectionError = `Supabase query check: ${error.message} (Code: ${error.code})`;
-        console.warn('[Supabase] Connection check returned error:', this.connectionError);
+        this.statusType = 'connection_error';
+        this.connectionError = error.message;
         return false;
       }
+
       this.isConnected = true;
+      this.statusType = 'connected';
       this.connectionError = null;
-      console.log('[Supabase] Successfully connected to Supabase PostgreSQL database.');
       return true;
     } catch (err) {
       this.isConnected = false;
+      this.statusType = 'connection_error';
       this.connectionError = err instanceof Error ? err.message : String(err);
-      console.warn('[Supabase] Connection test failed:', this.connectionError);
       return false;
+    } finally {
+      this.isChecking = false;
     }
   }
 
-  public async getStatus(): Promise<SupabaseStatus> {
+  public async getStatus(forceRecheck = false): Promise<SupabaseStatus> {
     const urlConfigured = !!process.env.SUPABASE_URL && !process.env.SUPABASE_URL.includes('your-project-ref');
     const keyConfigured = !!(process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY);
 
     if (this.isConfigured && this.client) {
-      const active = await this.testConnection();
+      const active = await this.testConnection(forceRecheck);
+
+      let message = '';
+      if (active) {
+        message = 'Kết nối Supabase PostgreSQL thành công. Dữ liệu đang được đồng bộ thời gian thực.';
+      } else if (this.statusType === 'tables_pending_migration') {
+        message = 'Đã kết nối Supabase project, chờ chạy migration SQL để tạo các bảng dữ liệu.';
+      } else {
+        message = `Kết nối Supabase gặp sự cố: ${this.connectionError || 'Vui lòng kiểm tra lại cấu hình'}`;
+      }
+
       return {
         connected: active,
         urlConfigured,
         keyConfigured,
-        message: active
-          ? 'Kết nối Supabase PostgreSQL thành công. Dữ liệu đang được đồng bộ thời gian thực.'
-          : `Đã cấu hình Supabase nhưng kiểm tra bảng chưa hoàn tất: ${this.connectionError || 'Vui lòng chạy file migration SQL'}`,
+        message,
         mode: active ? 'supabase' : 'in_memory_fallback',
+        statusType: this.statusType,
+        migrationSql: NGAN_NHI_MIGRATION_SQL,
+        projectRef: this.projectRef,
       };
     }
 
@@ -142,15 +192,21 @@ class DatabaseService {
       keyConfigured,
       message: 'Chưa cấu hình SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY. Ứng dụng đang lưu trữ phiên hội thoại trong bộ nhớ đệm an toàn.',
       mode: 'in_memory_fallback',
+      statusType: 'credentials_missing',
+      migrationSql: NGAN_NHI_MIGRATION_SQL,
     };
+  }
+
+  public getMigrationSql(): string {
+    return NGAN_NHI_MIGRATION_SQL;
   }
 
   public async getOrCreateSession(sessionTokenHash: string): Promise<{ id: string; isNew: boolean }> {
     const now = new Date().toISOString();
 
-    if (this.isConfigured && this.client) {
+    // Only attempt Supabase query if both configured AND tables are verified to exist
+    if (this.isConfigured && this.client && this.isConnected) {
       try {
-        // Check if exists
         const { data: existing, error: selectError } = await this.client
           .from('chat_sessions')
           .select('id')
@@ -158,7 +214,6 @@ class DatabaseService {
           .maybeSingle();
 
         if (existing && !selectError) {
-          // Update last_activity_at
           await this.client
             .from('chat_sessions')
             .update({ last_activity_at: now })
@@ -167,7 +222,6 @@ class DatabaseService {
           return { id: existing.id, isNew: false };
         }
 
-        // Create new session
         const newId = crypto.randomUUID();
         const { data: inserted, error: insertError } = await this.client
           .from('chat_sessions')
@@ -180,13 +234,11 @@ class DatabaseService {
           .select('id')
           .single();
 
-        if (insertError) {
-          console.warn('[Supabase] Insert session error, using fallback:', insertError.message);
-        } else if (inserted) {
+        if (!insertError && inserted) {
           return { id: inserted.id, isNew: true };
         }
-      } catch (err) {
-        console.warn('[Supabase] Session query failed, using in-memory session:', err);
+      } catch {
+        // Fall back gracefully to in-memory cache
       }
     }
 
@@ -222,7 +274,7 @@ class DatabaseService {
     const matchedIds = params.matchedKnowledgeIds || [];
     const score = params.matchScore ?? null;
 
-    if (this.isConfigured && this.client) {
+    if (this.isConfigured && this.client && this.isConnected) {
       try {
         const { data, error } = await this.client
           .from('chat_messages')
@@ -242,9 +294,8 @@ class DatabaseService {
         if (!error && data) {
           return { id: data.id, createdAt: data.created_at };
         }
-        console.warn('[Supabase] Message insert failed:', error?.message);
-      } catch (err) {
-        console.warn('[Supabase] Exception saving chat message:', err);
+      } catch {
+        // Fall back gracefully to in-memory
       }
     }
 
@@ -271,12 +322,11 @@ class DatabaseService {
     question: string,
     normalizedQuestion: string,
     reason?: string
-  ): Promise<boolean> {
+  ): Promise<{ success: boolean; isDatabasePersisted: boolean }> {
     const now = new Date().toISOString();
 
-    if (this.isConfigured && this.client) {
+    if (this.isConfigured && this.client && this.isConnected) {
       try {
-        // Try calling RPC function if created
         const { error: rpcError } = await this.client.rpc('record_unanswered_question', {
           p_question: question,
           p_normalized: normalizedQuestion,
@@ -284,41 +334,47 @@ class DatabaseService {
         });
 
         if (!rpcError) {
-          return true;
+          return { success: true, isDatabasePersisted: true };
         }
 
-        // Fallback to table upsert if RPC not present
-        const { data: existing } = await this.client
+        const { data: existing, error: selectErr } = await this.client
           .from('unanswered_questions')
           .select('id, occurrence_count')
           .eq('normalized_question', normalizedQuestion)
           .maybeSingle();
 
-        if (existing) {
-          await this.client
-            .from('unanswered_questions')
-            .update({
-              occurrence_count: (existing.occurrence_count || 1) + 1,
-              last_seen_at: now,
+        if (!selectErr) {
+          if (existing) {
+            const { error: updateErr } = await this.client
+              .from('unanswered_questions')
+              .update({
+                occurrence_count: (existing.occurrence_count || 1) + 1,
+                last_seen_at: now,
+                question,
+                reason: reason || 'Not matched with verified knowledge base',
+              })
+              .eq('id', existing.id);
+            if (!updateErr) {
+              return { success: true, isDatabasePersisted: true };
+            }
+          } else {
+            const { error: insertErr } = await this.client.from('unanswered_questions').insert({
+              id: crypto.randomUUID(),
               question,
+              normalized_question: normalizedQuestion,
+              occurrence_count: 1,
+              created_at: now,
+              last_seen_at: now,
+              status: 'pending',
               reason: reason || 'Not matched with verified knowledge base',
-            })
-            .eq('id', existing.id);
-        } else {
-          await this.client.from('unanswered_questions').insert({
-            id: crypto.randomUUID(),
-            question,
-            normalized_question: normalizedQuestion,
-            occurrence_count: 1,
-            created_at: now,
-            last_seen_at: now,
-            status: 'pending',
-            reason: reason || 'Not matched with verified knowledge base',
-          });
+            });
+            if (!insertErr) {
+              return { success: true, isDatabasePersisted: true };
+            }
+          }
         }
-        return true;
-      } catch (err) {
-        console.warn('[Supabase] Error recording unanswered question:', err);
+      } catch {
+        // Fall back gracefully
       }
     }
 
@@ -341,13 +397,13 @@ class DatabaseService {
         reason,
       });
     }
-    return true;
+    return { success: true, isDatabasePersisted: false };
   }
 
   public async saveFeedback(messageId: string, feedbackType: 'helpful' | 'not_helpful'): Promise<boolean> {
     const now = new Date().toISOString();
 
-    if (this.isConfigured && this.client) {
+    if (this.isConfigured && this.client && this.isConnected) {
       try {
         const { error } = await this.client.from('answer_feedback').insert({
           id: crypto.randomUUID(),
@@ -356,9 +412,8 @@ class DatabaseService {
           created_at: now,
         });
         if (!error) return true;
-        console.warn('[Supabase] Feedback insert error:', error.message);
-      } catch (err) {
-        console.warn('[Supabase] Exception saving feedback:', err);
+      } catch {
+        // Fall back
       }
     }
 
@@ -373,7 +428,7 @@ class DatabaseService {
   }
 
   public async getSessionMessages(sessionId: string): Promise<ChatMessageRecord[]> {
-    if (this.isConfigured && this.client) {
+    if (this.isConfigured && this.client && this.isConnected) {
       try {
         const { data, error } = await this.client
           .from('chat_messages')
@@ -393,8 +448,8 @@ class DatabaseService {
             matchScore: d.match_score !== null ? Number(d.match_score) : null,
           }));
         }
-      } catch (err) {
-        console.warn('[Supabase] Exception fetching session messages:', err);
+      } catch {
+        // Fall back
       }
     }
 
